@@ -21,18 +21,27 @@ export default function FeedCard({ item }: FeedCardProps) {
           ? "bg-gradient-to-r from-purple-500 to-pink-500"
           : "bg-gradient-to-r from-blue-500 to-indigo-500"
       }`} />
-      {item.imageUrl && (
+      {item.imageUrl && !item.imageUrl.includes('favicons') && (
         <div className="relative w-full h-48 bg-gray-200 dark:bg-gray-800 overflow-hidden">
           <img
             src={item.imageUrl}
             alt={item.title}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             loading="lazy"
+            referrerPolicy="no-referrer"
             onError={(e) => {
-              // Hide image container on error
-              const container = (e.target as HTMLImageElement).parentElement;
+              // Hide broken images gracefully - they'll show as cards without images
+              const img = e.target as HTMLImageElement;
+              const container = img.parentElement;
               if (container) {
-                container.style.display = 'none';
+                // Fade out the broken image
+                container.style.opacity = '0';
+                container.style.transition = 'opacity 0.3s';
+                setTimeout(() => {
+                  if (container) {
+                    container.style.display = 'none';
+                  }
+                }, 300);
               }
             }}
           />
@@ -50,7 +59,7 @@ export default function FeedCard({ item }: FeedCardProps) {
         </div>
       )}
       <div className="p-6 flex-1 flex flex-col min-w-0">
-        {!item.imageUrl && (
+        {(!item.imageUrl || item.imageUrl.includes('favicons')) && (
           <div className="flex items-start justify-between gap-2 mb-3">
             <span
               className={`flex-shrink-0 px-2.5 py-1 rounded-full text-xs font-semibold ${

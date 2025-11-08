@@ -2,11 +2,16 @@ import { app, Timer, InvocationContext } from "@azure/functions";
 import { fetchNewsItems, fetchVideoItems } from "../Shared/serper";
 import { saveItem, FeedItem } from "../Shared/storage";
 import { calculateScore } from "../Shared/scoring";
+import { bestImageFor } from "../Shared/image-resolver";
+import { domainFavicon } from "../Shared/thumb";
+
+const IMAGE_LOOKUP_CAP = 8; // Limit Serper Images API calls per run to stay within free tier
 
 async function fetchAndSaveItems(): Promise<number> {
   const now = new Date();
   const dateStr = now.toISOString().split("T")[0].replace(/-/g, "");
   let savedCount = 0;
+  let imageLookups = 0;
 
   const newsItems = await fetchNewsItems();
   for (const news of newsItems) {
@@ -23,6 +28,31 @@ async function fetchAndSaveItems(): Promise<number> {
       score: 0,
       imageUrl: news.imageUrl || news.thumbnailUrl || undefined,
     };
+    
+    // Enrich image if missing and we haven't hit the cap
+    if (!item.imageUrl) {
+      if (imageLookups < IMAGE_LOOKUP_CAP) {
+        try {
+          const enrichedImage = await bestImageFor({
+            url: item.link,
+            title: item.title,
+            image: news.imageUrl,
+            thumbnailUrl: news.thumbnailUrl,
+            source: item.source,
+          });
+          // Only use if it's not a favicon (favicons are too small and blurry)
+          if (enrichedImage && !enrichedImage.includes('favicons')) {
+            item.imageUrl = enrichedImage;
+            imageLookups++;
+          }
+        } catch (error) {
+          // If lookup fails, leave imageUrl undefined (no blurry favicon)
+        }
+      }
+      // If cap is reached or lookup failed, leave imageUrl undefined
+      // Cards will display without image rather than blurry favicon
+    }
+    
     item.score = calculateScore(item, now);
     await saveItem(item);
     savedCount++;
@@ -43,6 +73,31 @@ async function fetchAndSaveItems(): Promise<number> {
       score: 0,
       imageUrl: video.imageUrl || video.thumbnailUrl || undefined,
     };
+    
+    // Enrich image if missing and we haven't hit the cap
+    if (!item.imageUrl) {
+      if (imageLookups < IMAGE_LOOKUP_CAP) {
+        try {
+          const enrichedImage = await bestImageFor({
+            url: item.link,
+            title: item.title,
+            image: video.imageUrl,
+            thumbnailUrl: video.thumbnailUrl,
+            source: item.source,
+          });
+          // Only use if it's not a favicon (favicons are too small and blurry)
+          if (enrichedImage && !enrichedImage.includes('favicons')) {
+            item.imageUrl = enrichedImage;
+            imageLookups++;
+          }
+        } catch (error) {
+          // If lookup fails, leave imageUrl undefined (no blurry favicon)
+        }
+      }
+      // If cap is reached or lookup failed, leave imageUrl undefined
+      // Cards will display without image rather than blurry favicon
+    }
+    
     item.score = calculateScore(item, now);
     await saveItem(item);
     savedCount++;

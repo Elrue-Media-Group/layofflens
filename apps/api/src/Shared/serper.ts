@@ -26,30 +26,7 @@ const VIDEO_QUERIES = [
   "resume ATS tips 2025",
 ];
 
-// Extract YouTube thumbnail from video URL
-// This works because Serper provides the YouTube URL, and we can construct the thumbnail URL from it
-function getYouTubeThumbnail(url: string): string | undefined {
-  try {
-    const urlObj = new URL(url);
-    if (urlObj.hostname.includes("youtube.com") || urlObj.hostname.includes("youtu.be")) {
-      let videoId: string | null = null;
-      
-      if (urlObj.hostname.includes("youtu.be")) {
-        videoId = urlObj.pathname.slice(1);
-      } else {
-        videoId = urlObj.searchParams.get("v");
-      }
-      
-      if (videoId) {
-        // YouTube provides thumbnails at this URL pattern
-        return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
-      }
-    }
-  } catch (error) {
-    // Invalid URL, return undefined
-  }
-  return undefined;
-}
+import { youtubeThumb } from "./thumb";
 
 export async function fetchNewsItems(): Promise<SerperResult[]> {
   const allResults: SerperResult[] = [];
@@ -80,7 +57,7 @@ export async function fetchNewsItems(): Promise<SerperResult[]> {
             enriched.imageUrl = result.imageUrl || result.thumbnailUrl;
           } else {
             // Otherwise, try to extract YouTube thumbnail from the URL
-            const ytThumb = getYouTubeThumbnail(result.link);
+            const ytThumb = youtubeThumb(result.link);
             if (ytThumb) {
               enriched.imageUrl = ytThumb;
             }
@@ -126,7 +103,7 @@ export async function fetchVideoItems(): Promise<SerperResult[]> {
             enriched.imageUrl = result.imageUrl || result.thumbnailUrl;
           } else {
             // Otherwise, try to extract YouTube thumbnail from the URL
-            const ytThumb = getYouTubeThumbnail(result.link);
+            const ytThumb = youtubeThumb(result.link);
             if (ytThumb) {
               enriched.imageUrl = ytThumb;
             }
@@ -141,5 +118,31 @@ export async function fetchVideoItems(): Promise<SerperResult[]> {
   }
 
   return allResults;
+}
+
+/**
+ * Fetch images from Serper Images API
+ */
+export async function serperImages(q: string): Promise<any> {
+  try {
+    const response = await axios.post(
+      "https://google.serper.dev/images",
+      {
+        q,
+        num: 3,
+        gl: "us",
+        hl: "en",
+      },
+      {
+        headers: {
+          "X-API-KEY": SERPER_API_KEY,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    throw new Error(`Serper images failed: ${error}`);
+  }
 }
 
