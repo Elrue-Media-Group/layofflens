@@ -5,31 +5,12 @@ import CategoryFilter from "@/components/CategoryFilter";
 
 export const revalidate = 0; // Always revalidate on each request
 
-export default async function HomePage({
-  searchParams,
-}: {
-  searchParams: Promise<{ filter?: string; category?: string }>;
-}) {
+export default async function HomePage() {
   // Fetch all items but limit to top 50 for main view
+  // For static export, we fetch at build time with no filters
   const response = await fetchItems({ limit: 50 });
   // When limit is set, API returns FeedItem[] directly
   const allItems = Array.isArray(response) ? response : [];
-  const params = await searchParams;
-  const filter = params?.filter || "all";
-  const category = params?.category || "all";
-  
-  // Filter by type first
-  let items = filter === "all" 
-    ? allItems 
-    : allItems.filter((item) => item.type === filter);
-  
-  // Then filter by category (tag)
-  if (category !== "all") {
-    items = items.filter((item) => {
-      const tags = typeof item.tags === 'string' ? JSON.parse(item.tags || '[]') : (item.tags || []);
-      return tags.includes(category);
-    });
-  }
   
   // Extract all unique tags for the category filter
   const allTags = new Set<string>();
@@ -56,7 +37,7 @@ export default async function HomePage({
           <CategoryFilter availableTags={Array.from(allTags)} />
         </div>
       </div>
-      {items.length === 0 ? (
+      {allItems.length === 0 ? (
         <div className="text-center py-16 px-4">
           <div className="max-w-md mx-auto">
             <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
@@ -74,7 +55,7 @@ export default async function HomePage({
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {items.map((item) => (
+          {allItems.map((item) => (
             <FeedCard key={`${item.partitionKey}-${item.rowKey}`} item={item} />
           ))}
         </div>

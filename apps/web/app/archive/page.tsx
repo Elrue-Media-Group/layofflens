@@ -7,56 +7,31 @@ import Pagination from "@/components/Pagination";
 
 export const revalidate = 0; // Always revalidate on each request
 
-export default async function ArchivePage({
-  searchParams,
-}: {
-  searchParams: Promise<{ filter?: string; category?: string; days?: string; page?: string }>;
-}) {
-  const params = await searchParams;
-  // Default to all items (no date filter) unless user selects a date range
-  const days = params?.days ? parseInt(params.days, 10) : undefined;
-  const page = params?.page ? parseInt(params.page, 10) : 1;
-  const filter = params?.filter || "all";
-  const category = params?.category || "all";
-  
-  // Fetch all items for the date range (no pagination yet - we'll filter first)
-  // When no limit is set, API returns paginated data, but we want all items for filtering
-  // So we fetch without page param to get all items in the date range
-  const response = await fetchItems(days ? { days } : {});
+export default async function ArchivePage() {
+  // For static export, fetch all items (no filters at build time)
+  const response = await fetchItems();
   // API returns paginated response when no limit is set
   const paginatedData = response && typeof response === 'object' && 'pagination' in response 
     ? response as PaginatedResponse 
     : null;
   const allFetchedItems = paginatedData ? paginatedData.items : (Array.isArray(response) ? response : []);
   
-  // Filter by type first
-  let filteredItems = filter === "all" 
-    ? allFetchedItems 
-    : allFetchedItems.filter((item) => item.type === filter);
+  // For static export, show all items (filtering will be client-side)
+  const items = allFetchedItems;
   
-  // Then filter by category (tag)
-  if (category !== "all") {
-    filteredItems = filteredItems.filter((item) => {
-      const tags = typeof item.tags === 'string' ? JSON.parse(item.tags || '[]') : (item.tags || []);
-      return tags.includes(category);
-    });
-  }
-  
-  // Now apply pagination to filtered results
-  const pageSize = 50;
-  const totalFilteredItems = filteredItems.length;
-  const totalPages = Math.ceil(totalFilteredItems / pageSize);
-  const currentPageNum = page;
-  const startIndex = (currentPageNum - 1) * pageSize;
-  const endIndex = startIndex + pageSize;
-  const items = filteredItems.slice(startIndex, endIndex);
-  
-  // Extract all unique tags for the category filter (from all fetched items)
+  // Extract all unique tags for the category filter
   const allTags = new Set<string>();
   allFetchedItems.forEach((item) => {
     const tags = typeof item.tags === 'string' ? JSON.parse(item.tags || '[]') : (item.tags || []);
     tags.forEach((tag: string) => allTags.add(tag));
   });
+
+  // For static export, we'll show all items (pagination/filtering client-side)
+  const pageSize = 50;
+  const totalItems = items.length;
+  const totalPages = Math.ceil(totalItems / pageSize);
+  const currentPage = 1;
+  const displayedItems = items.slice(0, pageSize);
 
   return (
     <div>
@@ -67,10 +42,7 @@ export default async function ArchivePage({
               Archive
             </h2>
             <p className="text-lg text-gray-600 dark:text-gray-400 mt-1">
-              {days 
-                ? `Browse news and videos from the last ${days} days (${totalFilteredItems} items)`
-                : `Browse most recent news and videos (${totalFilteredItems} items)`
-              }
+              Browse all stored news and videos ({totalItems} items)
             </p>
           </div>
           <TypeFilter />
@@ -80,7 +52,7 @@ export default async function ArchivePage({
           <CategoryFilter availableTags={Array.from(allTags)} />
         </div>
       </div>
-      {items.length === 0 ? (
+      {displayedItems.length === 0 ? (
         <div className="text-center py-16 px-4">
           <div className="max-w-md mx-auto">
             <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
@@ -99,15 +71,15 @@ export default async function ArchivePage({
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {items.map((item) => (
+            {displayedItems.map((item) => (
               <FeedCard key={`${item.partitionKey}-${item.rowKey}`} item={item} />
             ))}
           </div>
           {totalPages > 1 && (
             <Pagination
-              currentPage={currentPageNum}
+              currentPage={currentPage}
               totalPages={totalPages}
-              totalItems={totalFilteredItems}
+              totalItems={totalItems}
             />
           )}
         </>
