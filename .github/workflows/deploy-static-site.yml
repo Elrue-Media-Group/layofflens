@@ -1,0 +1,63 @@
+name: Deploy Static Site to Azure Storage
+
+on:
+  push:
+    branches: [main, dev]
+    paths:
+      - 'apps/web/**'
+      - '.github/workflows/deploy-static-site.yml'
+  workflow_dispatch: # Allows manual trigger
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+      
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      
+      - name: Install dependencies
+        run: pnpm install
+      
+      - name: Set API base URL
+        run: |
+          echo "NEXT_PUBLIC_API_BASE=https://layofflens-func.azurewebsites.net/api" >> apps/web/.env.production
+      
+      - name: Build Next.js app
+        working-directory: apps/web
+        run: pnpm build
+      
+      - name: Configure Azure CLI
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      
+      - name: Upload to Azure Storage
+        run: |
+          # Upload all files from .next/out to the $web container
+          az storage blob upload-batch \
+            --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }} \
+            --source apps/web/.next/out \
+            --destination '$web' \
+            --overwrite \
+            --auth-mode login
+      
+      - name: Invalidate CDN (if configured)
+        run: |
+          # If you have Azure CDN, uncomment and configure:
+          # az cdn endpoint purge \
+          #   --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+          #   --profile-name <your-cdn-profile> \
+          #   --name <your-cdn-endpoint> \
+          #   --content-paths "/*"
+        continue-on-error: true
+

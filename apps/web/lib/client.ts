@@ -14,21 +14,43 @@ export interface FeedItem {
   imageUrl?: string; // Optional image URL from Serper
 }
 
-export async function fetchItems(days: number = 1): Promise<FeedItem[]> {
+export interface PaginatedResponse {
+  items: FeedItem[];
+  pagination: {
+    currentPage: number;
+    totalPages: number;
+    pageSize: number;
+    totalItems: number;
+  };
+}
+
+export async function fetchItems(options?: { days?: number; limit?: number; page?: number }): Promise<FeedItem[] | PaginatedResponse> {
   try {
-    const response = await fetch(`${API_BASE}/api/ListItemsHttp?days=${days}`, {
+    const params = new URLSearchParams();
+    if (options?.days) {
+      params.set("days", options.days.toString());
+    }
+    if (options?.limit) {
+      params.set("limit", options.limit.toString());
+    }
+    if (options?.page) {
+      params.set("page", options.page.toString());
+    }
+    
+    const url = `${API_BASE}/api/ListItemsHttp${params.toString() ? `?${params.toString()}` : ''}`;
+    const response = await fetch(url, {
       cache: "no-store",
     });
 
     if (!response.ok) {
       console.warn(`API returned ${response.status}: ${response.statusText}`);
-      return []; // Return empty array instead of throwing
+      return options?.limit ? [] : { items: [], pagination: { currentPage: 1, totalPages: 1, pageSize: 50, totalItems: 0 } };
     }
 
     return response.json();
   } catch (error) {
     console.warn("Failed to fetch items from API:", error);
-    return []; // Return empty array on network errors
+    return options?.limit ? [] : { items: [], pagination: { currentPage: 1, totalPages: 1, pageSize: 50, totalItems: 0 } };
   }
 }
 

@@ -13,6 +13,10 @@ export default function FeedCard({ item }: FeedCardProps) {
     month: "short",
     day: "numeric",
   });
+  
+  // Check if item is from today (new)
+  const today = new Date();
+  const isNew = date.toDateString() === today.toDateString();
 
   return (
     <article className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden hover:shadow-xl hover:border-blue-300 dark:hover:border-blue-700 transition-all duration-300 group h-full flex flex-col">
@@ -45,7 +49,12 @@ export default function FeedCard({ item }: FeedCardProps) {
               }
             }}
           />
-          <div className="absolute top-2 right-2">
+          <div className="absolute top-2 right-2 flex gap-1.5">
+            {isNew && (
+              <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-green-500/90 text-white backdrop-blur-sm">
+                NEW
+              </span>
+            )}
             <span
               className={`px-2.5 py-1 rounded-full text-xs font-semibold backdrop-blur-sm ${
                 item.type === "video"
@@ -61,15 +70,22 @@ export default function FeedCard({ item }: FeedCardProps) {
       <div className="p-6 flex-1 flex flex-col min-w-0">
         {(!item.imageUrl || item.imageUrl.includes('favicons')) && (
           <div className="flex items-start justify-between gap-2 mb-3">
-            <span
-              className={`flex-shrink-0 px-2.5 py-1 rounded-full text-xs font-semibold ${
-                item.type === "video"
-                  ? "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800"
-                  : "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800"
-              }`}
-            >
-              {item.type === "video" ? "🎥 Video" : "📰 News"}
-            </span>
+            <div className="flex items-center gap-1.5">
+              {isNew && (
+                <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800">
+                  NEW
+                </span>
+              )}
+              <span
+                className={`flex-shrink-0 px-2.5 py-1 rounded-full text-xs font-semibold ${
+                  item.type === "video"
+                    ? "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800"
+                    : "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800"
+                }`}
+              >
+                {item.type === "video" ? "🎥 Video" : "📰 News"}
+              </span>
+            </div>
           </div>
         )}
         <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors mb-2 line-clamp-2">

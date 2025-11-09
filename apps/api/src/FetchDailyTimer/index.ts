@@ -3,7 +3,7 @@ import { fetchNewsItems, fetchVideoItems } from "../Shared/serper";
 import { saveItem, FeedItem } from "../Shared/storage";
 import { calculateScore } from "../Shared/scoring";
 import { bestImageFor } from "../Shared/image-resolver";
-import { domainFavicon } from "../Shared/thumb";
+import { isVideoPlatform } from "../Shared/thumb";
 
 const IMAGE_LOOKUP_CAP = 8; // Limit Serper Images API calls per run to stay within free tier
 
@@ -60,6 +60,8 @@ async function fetchAndSaveItems(): Promise<number> {
 
   const videoItems = await fetchVideoItems();
   for (const video of videoItems) {
+    // Classify as video if it's from any known video platform
+    const isVideo = isVideoPlatform(video.link);
     const item: FeedItem = {
       partitionKey: dateStr,
       rowKey: Buffer.from(video.link).toString("base64").replace(/[/+=]/g, "").substring(0, 63),
@@ -68,7 +70,7 @@ async function fetchAndSaveItems(): Promise<number> {
       source: video.source || new URL(video.link).hostname,
       snippet: video.snippet,
       date: now.toISOString(),
-      type: "video",
+      type: isVideo ? "video" : "news", // Classify as news if not from a video platform
       tags: JSON.stringify(extractTags(video.title, video.snippet)),
       score: 0,
       imageUrl: video.imageUrl || video.thumbnailUrl || undefined,
@@ -110,12 +112,56 @@ function extractTags(title: string, snippet: string): string[] {
   const text = `${title} ${snippet}`.toLowerCase();
   const tags: string[] = [];
 
-  if (text.includes("layoff") || text.includes("job cut")) tags.push("Layoffs");
-  if (text.includes("ai") || text.includes("artificial intelligence")) tags.push("AI");
-  if (text.includes("automation")) tags.push("Automation");
-  if (text.includes("unemployment")) tags.push("Unemployment");
-  if (text.includes("hiring freeze")) tags.push("Hiring Freeze");
-  if (text.includes("resume") || text.includes("ats")) tags.push("Job Search");
+  // Layoffs and job cuts
+  if (text.includes("layoff") || text.includes("job cut") || text.includes("job loss")) {
+    tags.push("Layoffs");
+  }
+  
+  // AI and automation
+  if (text.includes("ai") || text.includes("artificial intelligence")) {
+    tags.push("AI");
+  }
+  if (text.includes("automation")) {
+    tags.push("Automation");
+  }
+  
+  // Unemployment
+  if (text.includes("unemployment")) {
+    tags.push("Unemployment");
+  }
+  
+  // Hiring freezes
+  if (text.includes("hiring freeze") || text.includes("hiring pause")) {
+    tags.push("Hiring Freeze");
+  }
+  
+  // Resume and ATS
+  if (text.includes("resume") || text.includes("cv ") || text.includes("curriculum vitae")) {
+    tags.push("Resume Writing");
+  }
+  if (text.includes("ats") || text.includes("applicant tracking system")) {
+    tags.push("ATS");
+  }
+  
+  // Interview tips
+  if (text.includes("interview") || text.includes("interviewing")) {
+    tags.push("Interview Tips");
+  }
+  
+  // Job search general
+  if (text.includes("job search") || text.includes("find a job") || text.includes("job hunting")) {
+    tags.push("Job Search");
+  }
+  
+  // Career advice
+  if (text.includes("career advice") || text.includes("career tips") || text.includes("career guidance")) {
+    tags.push("Career Advice");
+  }
+  
+  // Networking
+  if (text.includes("networking") || text.includes("linkedin")) {
+    tags.push("Networking");
+  }
 
   return tags;
 }
@@ -135,7 +181,7 @@ export async function fetchDailyTimer(
 }
 
 app.timer("FetchDailyTimer", {
-  schedule: "0 0 9 * * *",
+  schedule: "0 0 0 * * *", // Run nightly at midnight UTC
   handler: fetchDailyTimer,
 });
 

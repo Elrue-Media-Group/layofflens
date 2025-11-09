@@ -23,7 +23,13 @@ const NEWS_QUERIES = [
 
 const VIDEO_QUERIES = [
   "tech layoffs analysis site:youtube.com",
-  "resume ATS tips 2025",
+  "tech layoffs analysis site:vimeo.com",
+  "resume writing tips site:youtube.com",
+  "ATS resume tips site:youtube.com",
+  "job interview tips site:youtube.com",
+  "how to interview site:youtube.com",
+  "career advice layoffs site:youtube.com",
+  "resume tips recruiter site:youtube.com",
 ];
 
 import { youtubeThumb } from "./thumb";

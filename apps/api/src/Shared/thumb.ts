@@ -1,6 +1,61 @@
 // Helper functions for extracting thumbnails and favicons
 
 /**
+ * Check if a URL is from a known video platform
+ */
+export function isVideoPlatform(url: string): boolean {
+  try {
+    const urlObj = new URL(url);
+    const hostname = urlObj.hostname.toLowerCase();
+    
+    // YouTube
+    if (hostname.includes("youtube.com") || hostname.includes("youtu.be")) {
+      return true;
+    }
+    
+    // Vimeo
+    if (hostname.includes("vimeo.com")) {
+      return true;
+    }
+    
+    // LinkedIn Learning
+    if (hostname.includes("linkedin.com") && urlObj.pathname.includes("/learning/")) {
+      return true;
+    }
+    
+    // TikTok
+    if (hostname.includes("tiktok.com")) {
+      return true;
+    }
+    
+    // Twitch
+    if (hostname.includes("twitch.tv")) {
+      return true;
+    }
+    
+    // Dailymotion
+    if (hostname.includes("dailymotion.com")) {
+      return true;
+    }
+    
+    // Wistia
+    if (hostname.includes("wistia.com") || hostname.includes("wistia.net")) {
+      return true;
+    }
+    
+    // Loom
+    if (hostname.includes("loom.com")) {
+      return true;
+    }
+    
+    return false;
+  } catch (error) {
+    // Invalid URL
+    return false;
+  }
+}
+
+/**
  * Extract YouTube thumbnail URL from video URL
  */
 export function youtubeThumb(url: string): string | undefined {

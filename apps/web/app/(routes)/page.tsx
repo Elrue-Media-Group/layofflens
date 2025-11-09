@@ -1,20 +1,60 @@
 import { fetchItems } from "@/lib/client";
 import FeedCard from "@/components/FeedCard";
+import TypeFilter from "@/components/TypeFilter";
+import CategoryFilter from "@/components/CategoryFilter";
 
 export const revalidate = 0; // Always revalidate on each request
 
-export default async function HomePage() {
-  const items = await fetchItems(1);
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ filter?: string; category?: string }>;
+}) {
+  // Fetch all items but limit to top 50 for main view
+  const response = await fetchItems({ limit: 50 });
+  // When limit is set, API returns FeedItem[] directly
+  const allItems = Array.isArray(response) ? response : [];
+  const params = await searchParams;
+  const filter = params?.filter || "all";
+  const category = params?.category || "all";
+  
+  // Filter by type first
+  let items = filter === "all" 
+    ? allItems 
+    : allItems.filter((item) => item.type === filter);
+  
+  // Then filter by category (tag)
+  if (category !== "all") {
+    items = items.filter((item) => {
+      const tags = typeof item.tags === 'string' ? JSON.parse(item.tags || '[]') : (item.tags || []);
+      return tags.includes(category);
+    });
+  }
+  
+  // Extract all unique tags for the category filter
+  const allTags = new Set<string>();
+  allItems.forEach((item) => {
+    const tags = typeof item.tags === 'string' ? JSON.parse(item.tags || '[]') : (item.tags || []);
+    tags.forEach((tag: string) => allTags.add(tag));
+  });
 
   return (
     <div>
       <div className="mb-8">
-        <h2 className="text-4xl font-bold mb-3 text-gray-900 dark:text-gray-100">
-          Today&apos;s Feed
-        </h2>
-        <p className="text-lg text-gray-600 dark:text-gray-400">
-          Latest news and videos about layoffs and job market trends
-        </p>
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <h2 className="text-4xl font-bold text-gray-900 dark:text-gray-100">
+              Current Feed
+            </h2>
+            <p className="text-lg text-gray-600 dark:text-gray-400 mt-1">
+              Top 50 most recent news and videos about layoffs and job market trends
+            </p>
+          </div>
+          <TypeFilter />
+        </div>
+        <div className="mt-4">
+          <CategoryFilter availableTags={Array.from(allTags)} />
+        </div>
       </div>
       {items.length === 0 ? (
         <div className="text-center py-16 px-4">
@@ -28,7 +68,7 @@ export default async function HomePage() {
               No items found
             </h3>
             <p className="text-gray-500 dark:text-gray-400">
-              No items found for today. Check back later or trigger a manual fetch to populate data.
+              No items found. Check back later or trigger a manual fetch to populate data.
             </p>
           </div>
         </div>

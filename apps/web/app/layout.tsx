@@ -30,19 +30,21 @@ export default function RootLayout({
         </header>
         <nav className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex space-x-1">
-              <a
-                href="/"
-                className="border-b-2 border-transparent hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 py-4 px-4 text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors"
-              >
-                Today
-              </a>
-              <a
-                href="/archive"
-                className="border-b-2 border-transparent hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 py-4 px-4 text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors"
-              >
-                Archive
-              </a>
+            <div className="flex items-center justify-between">
+              <div className="flex space-x-1">
+                <a
+                  href="/"
+                  className="border-b-2 border-transparent hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 py-4 px-4 text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors"
+                >
+                  Current
+                </a>
+                <a
+                  href="/archive"
+                  className="border-b-2 border-transparent hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 py-4 px-4 text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors"
+                >
+                  Archive
+                </a>
+              </div>
             </div>
           </div>
         </nav>

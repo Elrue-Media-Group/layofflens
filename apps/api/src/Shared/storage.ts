@@ -1,4 +1,5 @@
 import { TableClient, AzureNamedKeyCredential } from "@azure/data-tables";
+import { DefaultAzureCredential } from "@azure/identity";
 
 const TABLE_NAME = "layoffitems";
 
@@ -23,11 +24,9 @@ export function getTableClient(): TableClient {
     return tableClient;
   }
 
-  const connectionString =
-    process.env.AZURE_STORAGE_CONNECTION_STRING ||
-    "UseDevelopmentStorage=true";
+  const connectionString = process.env.AZURE_STORAGE_CONNECTION_STRING;
 
-  if (connectionString.includes("UseDevelopmentStorage")) {
+  if (connectionString && connectionString.includes("UseDevelopmentStorage")) {
     // Local development with Azurite
     const accountName = "devstoreaccount1";
     const accountKey = "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==";
@@ -36,8 +35,8 @@ export function getTableClient(): TableClient {
     tableClient = new TableClient(serviceUrl, TABLE_NAME, credential, {
       allowInsecureConnection: true,
     });
-  } else {
-    // Production Azure Storage
+  } else if (connectionString && !connectionString.includes("UseDevelopmentStorage")) {
+    // Fallback: Production with connection string (if provided)
     const accountNameMatch = connectionString.match(/AccountName=([^;]+)/);
     const accountKeyMatch = connectionString.match(/AccountKey=([^;]+)/);
     
@@ -52,6 +51,18 @@ export function getTableClient(): TableClient {
     tableClient = new TableClient(serviceUrl, TABLE_NAME, credential, {
       allowInsecureConnection: false,
     });
+  } else {
+    // Production: Use managed identity with DefaultAzureCredential
+    // Storage account name is required - get from environment variable or connection string
+    const accountName = process.env.AZURE_STORAGE_ACCOUNT_NAME;
+    
+    if (!accountName) {
+      throw new Error("AZURE_STORAGE_ACCOUNT_NAME environment variable is required when using managed identity");
+    }
+
+    const credential = new DefaultAzureCredential();
+    const serviceUrl = `https://${accountName}.table.core.windows.net`;
+    tableClient = new TableClient(serviceUrl, TABLE_NAME, credential);
   }
 
   return tableClient;
@@ -74,20 +85,23 @@ export async function saveItem(item: FeedItem): Promise<void> {
   await client.upsertEntity(item, "Merge");
 }
 
-export async function getItemsForDays(days: number): Promise<FeedItem[]> {
+export async function getItemsForDays(days?: number): Promise<FeedItem[]> {
   await ensureTableExists();
   const client = getTableClient();
-
-  const cutoffDate = new Date();
-  cutoffDate.setDate(cutoffDate.getDate() - days);
-  const partitionKey = cutoffDate.toISOString().split("T")[0].replace(/-/g, "");
 
   const items: FeedItem[] = [];
   const entities = client.listEntities<FeedItem>();
 
+  // If days is specified, filter by date; otherwise get all items
+  let cutoffDate: Date | null = null;
+  if (days && days > 0) {
+    cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - days);
+  }
+
   for await (const entity of entities) {
-    const itemDate = new Date(entity.date);
-    if (itemDate >= cutoffDate) {
+    // If we have a cutoff date, filter by it; otherwise include all items
+    if (!cutoffDate || new Date(entity.date) >= cutoffDate) {
       // Parse tags from JSON string if needed
       const item = {
         ...entity,
