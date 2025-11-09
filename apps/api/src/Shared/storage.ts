@@ -25,7 +25,9 @@ export function getTableClient(): TableClient {
   }
 
   const connectionString = process.env.AZURE_STORAGE_CONNECTION_STRING;
+  const accountNameFromEnv = process.env.AZURE_STORAGE_ACCOUNT_NAME;
 
+  // Priority: Use connection string if provided, otherwise use managed identity
   if (connectionString && connectionString.includes("UseDevelopmentStorage")) {
     // Local development with Azurite
     const accountName = "devstoreaccount1";
@@ -36,12 +38,12 @@ export function getTableClient(): TableClient {
       allowInsecureConnection: true,
     });
   } else if (connectionString && !connectionString.includes("UseDevelopmentStorage")) {
-    // Fallback: Production with connection string (if provided)
+    // Production with connection string (if provided)
     const accountNameMatch = connectionString.match(/AccountName=([^;]+)/);
     const accountKeyMatch = connectionString.match(/AccountKey=([^;]+)/);
     
     if (!accountNameMatch || !accountKeyMatch) {
-      throw new Error("Invalid Azure Storage connection string");
+      throw new Error("Invalid Azure Storage connection string format");
     }
 
     const accountName = accountNameMatch[1];
@@ -53,16 +55,18 @@ export function getTableClient(): TableClient {
     });
   } else {
     // Production: Use managed identity with DefaultAzureCredential
-    // Storage account name is required - get from environment variable or connection string
-    const accountName = process.env.AZURE_STORAGE_ACCOUNT_NAME;
-    
-    if (!accountName) {
-      throw new Error("AZURE_STORAGE_ACCOUNT_NAME environment variable is required when using managed identity");
+    // Storage account name is required
+    if (!accountNameFromEnv) {
+      throw new Error("AZURE_STORAGE_ACCOUNT_NAME environment variable is required when using managed identity. Current value: " + (accountNameFromEnv || "undefined"));
     }
 
-    const credential = new DefaultAzureCredential();
-    const serviceUrl = `https://${accountName}.table.core.windows.net`;
-    tableClient = new TableClient(serviceUrl, TABLE_NAME, credential);
+    try {
+      const credential = new DefaultAzureCredential();
+      const serviceUrl = `https://${accountNameFromEnv}.table.core.windows.net`;
+      tableClient = new TableClient(serviceUrl, TABLE_NAME, credential);
+    } catch (credError: any) {
+      throw new Error(`Failed to create DefaultAzureCredential: ${credError?.message || String(credError)}`);
+    }
   }
 
   return tableClient;
