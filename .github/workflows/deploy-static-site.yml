@@ -28,13 +28,17 @@ jobs:
       - name: Install dependencies
         run: pnpm install
       
-      - name: Set API base URL
-        run: |
-          echo "NEXT_PUBLIC_API_BASE=https://layofflens-func.azurewebsites.net/api" >> apps/web/.env.production
-      
       - name: Build Next.js app
         working-directory: apps/web
+        env:
+          NEXT_PUBLIC_API_BASE: https://layofflens-func.azurewebsites.net/api
         run: pnpm build
+      
+      - name: Verify build output
+        run: |
+          echo "Checking for build output..."
+          ls -la apps/web/out || echo "out directory not found"
+          ls -la apps/web/.next/out || echo ".next/out directory not found"
       
       - name: Configure Azure CLI
         uses: azure/login@v1
@@ -43,13 +47,19 @@ jobs:
       
       - name: Upload to Azure Storage
         run: |
-          # Upload all files from .next/out to the $web container
-          az storage blob upload-batch \
-            --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }} \
-            --source apps/web/.next/out \
-            --destination '$web' \
-            --overwrite \
-            --auth-mode login
+          # Next.js static export creates 'out' directory (not .next/out)
+          if [ -d "apps/web/out" ]; then
+            echo "Uploading from apps/web/out"
+            az storage blob upload-batch \
+              --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }} \
+              --source apps/web/out \
+              --destination '$web' \
+              --overwrite \
+              --auth-mode login
+          else
+            echo "Error: apps/web/out directory not found after build"
+            exit 1
+          fi
       
       - name: Invalidate CDN (if configured)
         run: |
