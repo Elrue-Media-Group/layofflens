@@ -31,7 +31,7 @@ jobs:
       - name: Build Next.js app
         working-directory: apps/web
         env:
-          NEXT_PUBLIC_API_BASE: https://layofflens-func.azurewebsites.net/api
+          NEXT_PUBLIC_API_BASE: https://layofflens-func-fcdubwg4b8hnhhgx.eastus-01.azurewebsites.net/api
         run: pnpm build
       
       - name: Verify build output
