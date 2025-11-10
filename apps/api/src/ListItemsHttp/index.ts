@@ -1,13 +1,9 @@
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
-import { TableClient } from "@azure/data-tables";
-import { DefaultAzureCredential } from "@azure/identity";
 
-const TABLE_NAME = "layoffitems";
-const ACCOUNT = process.env.AZURE_STORAGE_ACCOUNT_NAME;
+// ISOLATION TEST: Remove all problematic imports
+// If this works, we know the issue is with TableClient/DefaultAzureCredential imports
 
-// Log at module load time to verify imports work
-console.log("ListItemsHttp module loaded");
-console.log("ACCOUNT env var:", ACCOUNT ? "SET" : "NOT SET");
+console.log("ListItemsHttp module loaded - MINIMAL VERSION");
 
 // TEMPORARY SIMPLIFIED VERSION FOR TESTING MANAGED IDENTITY
 // TODO: Restore original code after confirming managed identity works
@@ -143,113 +139,26 @@ export async function listItemsHttp(
 }
 */
 
-// MINIMAL TEST VERSION - just return success to verify handler works
+// ULTRA-MINIMAL VERSION - No imports, just return static response
 async function ListItemsHttp(req: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
-  context.log("=== ListItemsHttp handler called ===");
+  context.log("=== ListItemsHttp handler called (MINIMAL VERSION) ===");
   context.log("Method:", req.method);
   context.log("URL:", req.url);
   
-  try {
-    // Step 1: Check environment variable
-    context.log("Step 1: Checking AZURE_STORAGE_ACCOUNT_NAME");
-    const account = process.env.AZURE_STORAGE_ACCOUNT_NAME;
-    context.log("Account value:", account ? "SET" : "NOT SET");
-    if (!account) {
-      return {
-        status: 500,
-        jsonBody: { error: "AZURE_STORAGE_ACCOUNT_NAME is missing" },
-        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
-      };
-    }
-
-    // Step 2: Try creating DefaultAzureCredential
-    context.log("Step 2: Creating DefaultAzureCredential");
-    let credential;
-    try {
-      credential = new DefaultAzureCredential();
-      context.log("DefaultAzureCredential created successfully");
-    } catch (credErr: any) {
-      context.error("Failed to create DefaultAzureCredential:", credErr?.message);
-      return {
-        status: 500,
-        jsonBody: { error: `Failed to create credential: ${credErr?.message}` },
-        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
-      };
-    }
-
-    // Step 3: Try creating TableClient
-    context.log("Step 3: Creating TableClient");
-    const tableName = TABLE_NAME;
-    const endpoint = `https://${account}.table.core.windows.net`;
-    context.log("Endpoint:", endpoint);
-    context.log("Table name:", tableName);
-    
-    let client;
-    try {
-      client = new TableClient(endpoint, tableName, credential);
-      context.log("TableClient created successfully");
-    } catch (clientErr: any) {
-      context.error("Failed to create TableClient:", clientErr?.message);
-      return {
-        status: 500,
-        jsonBody: { error: `Failed to create TableClient: ${clientErr?.message}` },
-        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
-      };
-    }
-
-    // Step 4: Try listing entities
-    context.log("Step 4: Listing entities");
-    const limit = Number(req.query.get("limit") || 5);
-    context.log("Limit:", limit);
-    
-    const items: any[] = [];
-    try {
-      const iter = client.listEntities();
-      for await (const e of iter) {
-        items.push(e);
-        if (items.length >= limit) break;
-      }
-      context.log("Successfully fetched", items.length, "items");
-    } catch (listErr: any) {
-      context.error("Failed to list entities:", listErr?.message);
-      context.error("List error stack:", listErr?.stack);
-      return {
-        status: 500,
-        jsonBody: { 
-          error: `Failed to list entities: ${listErr?.message}`,
-          stack: listErr?.stack
-        },
-        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
-      };
-    }
-
-    return {
-      status: 200,
-      jsonBody: { 
-        success: true,
-        itemCount: items.length,
-        items: items
-      },
-      headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
-      },
-    };
-  } catch (err: any) {
-    context.error(`ListItemsHttp failed: ${err?.message}`);
-    context.error("Error stack:", err?.stack || "");
-    return {
-      status: 500,
-      jsonBody: { 
-        error: err?.message || "Internal error",
-        stack: err?.stack
-      },
-      headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
-      },
-    };
-  }
+  // Just return success - no storage calls
+  return {
+    status: 200,
+    jsonBody: { 
+      success: true,
+      message: "Handler works! This proves function registration is fine.",
+      timestamp: new Date().toISOString(),
+      account: process.env.AZURE_STORAGE_ACCOUNT_NAME ? "SET" : "NOT SET"
+    },
+    headers: {
+      "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": "*",
+    },
+  };
 }
 
 // OPTIONS handler for CORS preflight
