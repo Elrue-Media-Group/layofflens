@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { fetchItems, FeedItem } from "@/lib/client";
 import FeedCard from "./FeedCard";
 
@@ -10,8 +11,12 @@ interface FeedClientProps {
 }
 
 export default function FeedClient({ initialItems, limit }: FeedClientProps) {
+  const searchParams = useSearchParams();
   const [items, setItems] = useState<FeedItem[]>(initialItems);
   const [loading, setLoading] = useState(false);
+
+  const typeFilter = searchParams.get("filter") || "all";
+  const categoryFilter = searchParams.get("category") || "all";
 
   useEffect(() => {
     // If we have initial items, use them. Otherwise, fetch fresh data.
@@ -31,6 +36,24 @@ export default function FeedClient({ initialItems, limit }: FeedClientProps) {
         });
     }
   }, [initialItems.length, limit]);
+
+  // Apply client-side filtering
+  const filteredItems = items.filter((item) => {
+    // Type filter
+    if (typeFilter !== "all" && item.type !== typeFilter) {
+      return false;
+    }
+
+    // Category filter
+    if (categoryFilter !== "all") {
+      const tags = typeof item.tags === 'string' ? JSON.parse(item.tags || '[]') : (item.tags || []);
+      if (!tags.includes(categoryFilter)) {
+        return false;
+      }
+    }
+
+    return true;
+  });
 
   if (loading) {
     return (
@@ -72,9 +95,29 @@ export default function FeedClient({ initialItems, limit }: FeedClientProps) {
     );
   }
 
+  if (filteredItems.length === 0) {
+    return (
+      <div className="text-center py-16 px-4">
+        <div className="max-w-md mx-auto">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+            <svg className="w-8 h-8 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
+          </div>
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
+            No items match your filters
+          </h3>
+          <p className="text-gray-500 dark:text-gray-400">
+            Try adjusting your filters to see more results.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {items.map((item) => (
+      {filteredItems.map((item) => (
         <FeedCard key={`${item.partitionKey}-${item.rowKey}`} item={item} />
       ))}
     </div>
