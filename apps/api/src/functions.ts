@@ -1,5 +1,6 @@
 // Main entry point - imports all functions so they register at startup
 // Guard to ensure this only runs once even if loaded multiple times
+// Updated: 2025-11-10 - trigger Functions deployment
 if (!(global as any).__layofflens_functions_loaded) {
   (global as any).__layofflens_functions_loaded = true;
   
