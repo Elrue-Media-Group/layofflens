@@ -77,6 +77,10 @@ jobs:
             --name layofflens-func \
             --resource-group LayoffLens \
             --settings AzureWebJobsFeatureFlags=EnableWorkerIndexing || true
+          az functionapp config appsettings set \
+            --name layofflens-func \
+            --resource-group LayoffLens \
+            --settings FUNCTIONS_NODE_BLOCK_ON_ENTRY_POINT_ERROR=true || true
 
       - name: Deploy to Azure Functions
         working-directory: apps/api
