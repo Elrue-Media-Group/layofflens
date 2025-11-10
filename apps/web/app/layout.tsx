@@ -38,20 +38,15 @@ export default function RootLayout({
         <div className="sticky top-0 z-50">
           <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-sm">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
-                    LayoffLens
-                  </h1>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1.5">
-                    Daily AI-powered tracker for layoff related news and job market trends
-                  </p>
-                </div>
+              <div>
                 <img
                   src="https://layofflens.blob.core.windows.net/layofflens/logo-redo.png"
                   alt="LayoffLens Logo"
-                  className="h-20 w-auto object-contain rounded-xl"
+                  className="h-16 sm:h-20 w-auto object-contain rounded-xl"
                 />
+                <p className="text-sm sm:text-base text-gray-800 dark:text-white mt-2">
+                  Daily AI-powered tracker for layoff related news and job market trends
+                </p>
               </div>
             </div>
           </header>
