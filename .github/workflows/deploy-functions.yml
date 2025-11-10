@@ -61,6 +61,13 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
       
+      - name: Set EnableWorkerIndexing flag
+        run: |
+          az functionapp config appsettings set \
+            --name layofflens-func \
+            --resource-group LayoffLens \
+            --settings AzureWebJobsFeatureFlags=EnableWorkerIndexing
+
       - name: Deploy to Azure Functions
         working-directory: apps/api
         run: |
