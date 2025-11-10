@@ -128,41 +128,57 @@ export async function listItemsHttp(
   }
 }
 
-app.http("ListItemsHttp", {
-  methods: ["GET", "OPTIONS"],
-  authLevel: "anonymous",
-  handler: async (request: HttpRequest, context: InvocationContext) => {
-    try {
-      context.log("Handler wrapper called, method:", request.method);
-      // Handle OPTIONS preflight request
-      if (request.method === "OPTIONS") {
-        context.log("Handling OPTIONS request");
+// Wrap function registration in try-catch to catch initialization errors
+try {
+  app.http("ListItemsHttp", {
+    methods: ["GET", "OPTIONS"],
+    authLevel: "anonymous",
+    handler: async (request: HttpRequest, context: InvocationContext) => {
+      try {
+        context.log("Handler wrapper called, method:", request.method);
+        context.log("Storage module loaded:", !!getItemsForDays);
+        
+        // Handle OPTIONS preflight request
+        if (request.method === "OPTIONS") {
+          context.log("Handling OPTIONS request");
+          return {
+            status: 200,
+            headers: {
+              "Access-Control-Allow-Origin": "*",
+              "Access-Control-Allow-Methods": "GET, OPTIONS",
+              "Access-Control-Allow-Headers": "Content-Type",
+            },
+          };
+        }
+        context.log("Calling listItemsHttp function");
+        return await listItemsHttp(request, context);
+      } catch (handlerError: any) {
+        const errorMsg = handlerError?.message || String(handlerError);
+        const errorStack = handlerError?.stack || "";
+        context.error("Handler wrapper error:", errorMsg);
+        context.error("Handler error stack:", errorStack);
+        context.error("Error type:", handlerError?.constructor?.name || "Unknown");
+        context.error("Full error:", JSON.stringify(handlerError, Object.getOwnPropertyNames(handlerError)));
         return {
-          status: 200,
+          status: 500,
+          jsonBody: { 
+            error: errorMsg,
+            type: "handler_wrapper_error",
+            stack: process.env.NODE_ENV === "development" ? errorStack : undefined
+          },
           headers: {
+            "Content-Type": "application/json",
             "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "GET, OPTIONS",
-            "Access-Control-Allow-Headers": "Content-Type",
           },
         };
       }
-      context.log("Calling listItemsHttp function");
-      return await listItemsHttp(request, context);
-    } catch (handlerError: any) {
-      context.error("Handler wrapper error:", handlerError?.message || String(handlerError));
-      context.error("Handler error stack:", handlerError?.stack || "");
-      return {
-        status: 500,
-        jsonBody: { 
-          error: handlerError?.message || "Handler error",
-          type: "handler_wrapper_error"
-        },
-        headers: {
-          "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*",
-        },
-      };
-    }
-  },
-});
+    },
+  });
+  console.log("ListItemsHttp function registered successfully");
+} catch (registrationError: any) {
+  console.error("Failed to register ListItemsHttp function:", registrationError?.message || String(registrationError));
+  console.error("Registration error stack:", registrationError?.stack || "");
+  // Re-throw to prevent silent failure
+  throw registrationError;
+}
 

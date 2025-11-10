@@ -25,50 +25,35 @@ export function getTableClient(): TableClient {
   }
 
   const connectionString = process.env.AZURE_STORAGE_CONNECTION_STRING;
-  const accountNameFromEnv = process.env.AZURE_STORAGE_ACCOUNT_NAME;
+  const accountName = process.env.AZURE_STORAGE_ACCOUNT_NAME;
 
-  // Priority: Use connection string if provided, otherwise use managed identity
-  if (connectionString && connectionString.includes("UseDevelopmentStorage")) {
-    // Local development with Azurite
-    const accountName = "devstoreaccount1";
-    const accountKey = "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==";
-    const credential = new AzureNamedKeyCredential(accountName, accountKey);
-    const serviceUrl = "http://127.0.0.1:10002/devstoreaccount1";
-    tableClient = new TableClient(serviceUrl, TABLE_NAME, credential, {
-      allowInsecureConnection: true,
-    });
-  } else if (connectionString && !connectionString.includes("UseDevelopmentStorage")) {
-    // Production with connection string (if provided)
-    const accountNameMatch = connectionString.match(/AccountName=([^;]+)/);
-    const accountKeyMatch = connectionString.match(/AccountKey=([^;]+)/);
-    
-    if (!accountNameMatch || !accountKeyMatch) {
-      throw new Error("Invalid Azure Storage connection string format");
+  // Priority: Use connection string if provided (for local dev or legacy)
+  if (connectionString) {
+    if (connectionString.includes("UseDevelopmentStorage")) {
+      // Local development with Azurite - use manual setup
+      const devAccountName = "devstoreaccount1";
+      const devAccountKey = "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==";
+      const credential = new AzureNamedKeyCredential(devAccountName, devAccountKey);
+      const serviceUrl = "http://127.0.0.1:10002/devstoreaccount1";
+      tableClient = new TableClient(serviceUrl, TABLE_NAME, credential, {
+        allowInsecureConnection: true,
+      });
+    } else {
+      // Production with connection string - use fromConnectionString helper
+      tableClient = TableClient.fromConnectionString(connectionString, TABLE_NAME);
     }
-
-    const accountName = accountNameMatch[1];
-    const accountKey = accountKeyMatch[1];
-    const credential = new AzureNamedKeyCredential(accountName, accountKey);
-    const serviceUrl = `https://${accountName}.table.core.windows.net`;
-    tableClient = new TableClient(serviceUrl, TABLE_NAME, credential, {
-      allowInsecureConnection: false,
-    });
-  } else {
-    // Production: Use managed identity with DefaultAzureCredential
-    // Storage account name is required
-    if (!accountNameFromEnv) {
-      throw new Error("AZURE_STORAGE_ACCOUNT_NAME environment variable is required when using managed identity. Current value: " + (accountNameFromEnv || "undefined"));
-    }
-
-    try {
-      const credential = new DefaultAzureCredential();
-      const serviceUrl = `https://${accountNameFromEnv}.table.core.windows.net`;
-      tableClient = new TableClient(serviceUrl, TABLE_NAME, credential);
-    } catch (credError: any) {
-      throw new Error(`Failed to create DefaultAzureCredential: ${credError?.message || String(credError)}`);
-    }
+    return tableClient;
   }
 
+  // No connection string - use managed identity
+  if (!accountName) {
+    throw new Error("AZURE_STORAGE_ACCOUNT_NAME environment variable is required when using managed identity");
+  }
+
+  // Use managed identity for authentication
+  const endpoint = `https://${accountName}.table.core.windows.net`;
+  tableClient = new TableClient(endpoint, TABLE_NAME, new DefaultAzureCredential());
+  
   return tableClient;
 }
 
