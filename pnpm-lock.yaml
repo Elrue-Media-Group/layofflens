@@ -38,6 +38,9 @@ importers:
       dotenv:
         specifier: ^16.4.1
         version: 16.6.1
+      form-data:
+        specifier: ^4.0.0
+        version: 4.0.4
       long:
         specifier: ^4.0.0
         version: 4.0.0
@@ -48,6 +51,7 @@ importers:
       '@types/node':
         specifier: ^20.11.0
         version: 20.19.24
+    optionalDependencies:
       typescript:
         specifier: ^5.3.3
         version: 5.9.3
