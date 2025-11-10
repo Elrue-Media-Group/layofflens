@@ -164,11 +164,15 @@ export async function listItemsHttp(
     const limit = Number(request.query.get("limit") || 50);
     context.log("Fetching items with limit:", limit);
     
-    const iter = client.listEntities({ queryOptions: { top: limit } });
+    const iter = client.listEntities();
     const items: any[] = [];
     
+    // Manually limit results as we iterate
     for await (const e of iter) {
       items.push(e);
+      if (items.length >= limit) {
+        break;
+      }
     }
 
     context.log("Successfully fetched", items.length, "items");
