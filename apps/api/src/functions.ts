@@ -9,7 +9,14 @@ if (!(global as any).__layofflens_functions_loaded) {
     
     // Import all function handlers - this registers them with the app
     // These must be synchronous requires to register at startup
+    console.log("Loading TestHttp...");
+    require("./TestHttp/index");
+    console.log("TestHttp loaded successfully");
+    
+    console.log("Loading ListItemsHttp...");
     require("./ListItemsHttp/index");
+    console.log("ListItemsHttp loaded successfully");
+    
     require("./FetchNowHttp/index");
     require("./FetchDailyTimer/index");
   } catch (initError: any) {

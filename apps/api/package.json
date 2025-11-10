@@ -10,9 +10,9 @@
     "watch": "tsc -w"
   },
   "dependencies": {
-    "@azure/data-tables": "^13.2.2",
-    "@azure/functions": "^4.4.1",
-    "@azure/identity": "^4.0.1",
+    "@azure/data-tables": "^13.2.0",
+    "@azure/functions": "^4.4.0",
+    "@azure/identity": "^4.4.0",
     "axios": "^1.6.5",
     "dotenv": "^16.4.1"
   },
