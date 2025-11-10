@@ -1,24 +1,5 @@
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
-
-// ISOLATION TEST: Remove all problematic imports
-// If this works, we know the issue is with TableClient/DefaultAzureCredential imports
-
-console.log("ListItemsHttp module loaded - MINIMAL VERSION");
-
-// TEMPORARY SIMPLIFIED VERSION FOR TESTING MANAGED IDENTITY
-// TODO: Restore original code after confirming managed identity works
-
-// ORIGINAL CODE (COMMENTED OUT FOR TESTING):
-/*
-// Import with error handling
-let getItemsForDays: any;
-try {
-  const storageModule = require("../Shared/storage");
-  getItemsForDays = storageModule.getItemsForDays;
-} catch (importError: any) {
-  console.error("Failed to import storage module:", importError?.message || String(importError));
-  // We'll handle this in the handler
-}
+import { getItemsForDays } from "../Shared/storage";
 
 export async function listItemsHttp(
   request: HttpRequest,
@@ -26,27 +7,15 @@ export async function listItemsHttp(
 ): Promise<HttpResponseInit> {
   try {
     context.log("ListItemsHttp called");
-    
-    // Check if storage module loaded
-    if (!getItemsForDays) {
-      context.error("Storage module not loaded");
-      return {
-        status: 500,
-        jsonBody: { error: "Storage module failed to load" },
-        headers: {
-          "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*",
-        },
-      };
-    }
+
     const daysParam = request.query.get("days");
     const limitParam = request.query.get("limit");
     const pageParam = request.query.get("page");
-    
+
     context.log("Query params:", { daysParam, limitParam, pageParam });
-    
+
     let items: any[];
-    
+
     try {
       // If days is specified, use it; otherwise get most recent items (default limit for archive)
       if (daysParam) {
@@ -72,7 +41,7 @@ export async function listItemsHttp(
       context.error("Storage error:", storageError);
       throw new Error(`Storage operation failed: ${storageError?.message || String(storageError)}`);
     }
-    
+
     // Apply limit if specified (for Current feed)
     if (limitParam) {
       const limit = parseInt(limitParam, 10);
@@ -80,13 +49,13 @@ export async function listItemsHttp(
         items = items.slice(0, limit);
       }
     }
-    
+
     // Pagination for archive (only when page param is explicitly set)
     const pageSize = 50;
     let paginatedItems = items;
     let totalPages = 1;
     let currentPage = 1;
-    
+
     if (pageParam && !limitParam) {
       // Only paginate if page param is explicitly set (archive mode)
       currentPage = parseInt(pageParam, 10);
@@ -126,7 +95,7 @@ export async function listItemsHttp(
     context.log("Full error object:", JSON.stringify(error, Object.getOwnPropertyNames(error)));
     return {
       status: 500,
-      jsonBody: { 
+      jsonBody: {
         error: errorMessage,
         details: process.env.NODE_ENV === "development" ? errorStack : undefined
       },
@@ -136,29 +105,6 @@ export async function listItemsHttp(
       },
     };
   }
-}
-*/
-
-// ULTRA-MINIMAL VERSION - No imports, just return static response
-async function ListItemsHttp(req: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
-  context.log("=== ListItemsHttp handler called (MINIMAL VERSION) ===");
-  context.log("Method:", req.method);
-  context.log("URL:", req.url);
-  
-  // Just return success - no storage calls
-  return {
-    status: 200,
-    jsonBody: { 
-      success: true,
-      message: "Handler works! This proves function registration is fine.",
-      timestamp: new Date().toISOString(),
-      account: process.env.AZURE_STORAGE_ACCOUNT_NAME ? "SET" : "NOT SET"
-    },
-    headers: {
-      "Content-Type": "application/json",
-      "Access-Control-Allow-Origin": "*",
-    },
-  };
 }
 
 // OPTIONS handler for CORS preflight
@@ -173,7 +119,7 @@ async function listItemsHttpOptions(req: HttpRequest, context: InvocationContext
   };
 }
 
-// Wrapper handler to match FetchNowHttp pattern
+// Wrapper handler
 async function listItemsHttpHandler(req: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
   try {
     context.log("listItemsHttpHandler called, method:", req.method);
@@ -181,16 +127,16 @@ async function listItemsHttpHandler(req: HttpRequest, context: InvocationContext
       context.log("Handling OPTIONS request");
       return await listItemsHttpOptions(req, context);
     }
-    context.log("Calling ListItemsHttp function");
-    const result = await ListItemsHttp(req, context);
-    context.log("ListItemsHttp returned successfully");
+    context.log("Calling listItemsHttp function");
+    const result = await listItemsHttp(req, context);
+    context.log("listItemsHttp returned successfully");
     return result;
   } catch (handlerErr: any) {
     context.error("listItemsHttpHandler error:", handlerErr?.message || String(handlerErr));
     context.error("Handler error stack:", handlerErr?.stack || "");
     return {
       status: 500,
-      jsonBody: { 
+      jsonBody: {
         error: handlerErr?.message || "Handler error",
         stack: handlerErr?.stack
       },
@@ -202,10 +148,9 @@ async function listItemsHttpHandler(req: HttpRequest, context: InvocationContext
   }
 }
 
-// Function registration - match FetchNowHttp pattern exactly
+// Function registration
 app.http("ListItemsHttp", {
   methods: ["GET", "OPTIONS"],
   authLevel: "anonymous",
   handler: listItemsHttpHandler,
 });
-
