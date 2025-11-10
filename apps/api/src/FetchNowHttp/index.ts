@@ -204,7 +204,7 @@ export async function fetchNowHttp(
 
 app.http("FetchNowHttp", {
   methods: ["POST"],
-  authLevel: "function",
+  authLevel: "anonymous",
   handler: fetchNowHttp,
 });
 
