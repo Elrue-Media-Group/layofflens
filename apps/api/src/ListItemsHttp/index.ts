@@ -5,6 +5,10 @@ import { DefaultAzureCredential } from "@azure/identity";
 const TABLE_NAME = "layoffitems";
 const ACCOUNT = process.env.AZURE_STORAGE_ACCOUNT_NAME;
 
+// Log at module load time to verify imports work
+console.log("ListItemsHttp module loaded");
+console.log("ACCOUNT env var:", ACCOUNT ? "SET" : "NOT SET");
+
 // TEMPORARY SIMPLIFIED VERSION FOR TESTING MANAGED IDENTITY
 // TODO: Restore original code after confirming managed identity works
 
@@ -139,35 +143,35 @@ export async function listItemsHttp(
 }
 */
 
-// SIMPLIFIED TEST VERSION
-export async function listItemsHttp(
-  request: HttpRequest,
-  context: InvocationContext
-): Promise<HttpResponseInit> {
+// SIMPLIFIED TEST VERSION - v4 compatible handler
+async function ListItemsHttp(req: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
   try {
-    context.log("ListItemsHttp (simplified) called");
+    context.log("ListItemsHttp handler called");
     
-    if (!ACCOUNT) {
+    const account = process.env.AZURE_STORAGE_ACCOUNT_NAME;
+    if (!account) {
       throw new Error("AZURE_STORAGE_ACCOUNT_NAME is missing");
     }
 
+    const tableName = TABLE_NAME;
+    const endpoint = `https://${account}.table.core.windows.net`;
+
     context.log("Creating TableClient with managed identity");
-    const endpoint = `https://${ACCOUNT}.table.core.windows.net`;
-    const client = new TableClient(endpoint, TABLE_NAME, new DefaultAzureCredential());
+    const client = new TableClient(endpoint, tableName, new DefaultAzureCredential());
 
     context.log("Ensuring table exists");
-    // Optional: ensure table exists (ignore 409 conflict)
+    // Optional safety: ensure table exists (ignore 409)
     await client.createTable().catch(() => {
-      context.log("Table already exists or creation failed (ignoring)");
+      context.log("Table already exists (ignoring 409)");
     });
 
-    const limit = Number(request.query.get("limit") || 50);
+    const limit = Number(req.query.get("limit") || 50);
     context.log("Fetching items with limit:", limit);
     
-    const iter = client.listEntities();
     const items: any[] = [];
+    const iter = client.listEntities();
     
-    // Manually limit results as we iterate
+    // Manually limit results (top option doesn't exist in SDK)
     for await (const e of iter) {
       items.push(e);
       if (items.length >= limit) {
@@ -186,8 +190,7 @@ export async function listItemsHttp(
       },
     };
   } catch (err: any) {
-    context.error("ListItemsHttp failed:", err?.message);
-    context.error("Error stack:", err?.stack || "");
+    context.error(`ListItemsHttp failed: ${err?.message}\n${err?.stack || ""}`);
     return {
       status: 500,
       jsonBody: { 
@@ -202,47 +205,28 @@ export async function listItemsHttp(
   }
 }
 
-// Function registration
+// OPTIONS handler for CORS preflight
+async function ListItemsHttpOptions(req: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+  return {
+    status: 200,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
+    },
+  };
+}
+
+// Function registration - v4 model
 app.http("ListItemsHttp", {
   methods: ["GET", "OPTIONS"],
   authLevel: "anonymous",
-  handler: async (request: HttpRequest, context: InvocationContext) => {
-    try {
-      context.log("Handler wrapper called, method:", request.method);
-      
-      // Handle OPTIONS preflight request
-      if (request.method === "OPTIONS") {
-        context.log("Handling OPTIONS request");
-        return {
-          status: 200,
-          headers: {
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "GET, OPTIONS",
-            "Access-Control-Allow-Headers": "Content-Type",
-          },
-        };
-      }
-      
-      context.log("Calling listItemsHttp function");
-      return await listItemsHttp(request, context);
-    } catch (handlerError: any) {
-      const errorMsg = handlerError?.message || String(handlerError);
-      const errorStack = handlerError?.stack || "";
-      context.error("Handler wrapper error:", errorMsg);
-      context.error("Handler error stack:", errorStack);
-      return {
-        status: 500,
-        jsonBody: { 
-          error: errorMsg,
-          type: "handler_wrapper_error",
-          stack: process.env.NODE_ENV === "development" ? errorStack : undefined
-        },
-        headers: {
-          "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*",
-        },
-      };
+  route: "ListItemsHttp",
+  handler: async (req: HttpRequest, context: InvocationContext) => {
+    if (req.method === "OPTIONS") {
+      return await ListItemsHttpOptions(req, context);
     }
+    return await ListItemsHttp(req, context);
   },
 });
 
