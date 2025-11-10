@@ -162,7 +162,7 @@ async function ListItemsHttp(req: HttpRequest, context: InvocationContext): Prom
 }
 
 // OPTIONS handler for CORS preflight
-async function ListItemsHttpOptions(req: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+async function listItemsHttpOptions(req: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
   return {
     status: 200,
     headers: {
@@ -173,16 +173,18 @@ async function ListItemsHttpOptions(req: HttpRequest, context: InvocationContext
   };
 }
 
-// Function registration - v4 model
+// Wrapper handler to match FetchNowHttp pattern
+async function listItemsHttpHandler(req: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+  if (req.method === "OPTIONS") {
+    return await listItemsHttpOptions(req, context);
+  }
+  return await ListItemsHttp(req, context);
+}
+
+// Function registration - match FetchNowHttp pattern exactly
 app.http("ListItemsHttp", {
   methods: ["GET", "OPTIONS"],
   authLevel: "anonymous",
-  route: "ListItemsHttp",
-  handler: async (req: HttpRequest, context: InvocationContext) => {
-    if (req.method === "OPTIONS") {
-      return await ListItemsHttpOptions(req, context);
-    }
-    return await ListItemsHttp(req, context);
-  },
+  handler: listItemsHttpHandler,
 });
 
