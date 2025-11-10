@@ -64,14 +64,11 @@ jobs:
       - name: Set required Function App settings
         run: |
           # Set each setting individually to avoid clearing existing values
+          # Note: WEBSITE_RUN_FROM_PACKAGE is not supported in Flex Consumption
           az functionapp config appsettings set \
             --name layofflens-func \
             --resource-group LayoffLens \
             --settings FUNCTIONS_EXTENSION_VERSION=~4 || true
-          az functionapp config appsettings set \
-            --name layofflens-func \
-            --resource-group LayoffLens \
-            --settings WEBSITE_RUN_FROM_PACKAGE=1 || true
           az functionapp config appsettings set \
             --name layofflens-func \
             --resource-group LayoffLens \
