@@ -23,7 +23,6 @@ const NEWS_QUERIES = [
 
 const VIDEO_QUERIES = [
   "tech layoffs analysis site:youtube.com",
-  "tech layoffs analysis site:vimeo.com",
   "resume writing tips site:youtube.com",
   "ATS resume tips site:youtube.com",
   "job interview tips site:youtube.com",

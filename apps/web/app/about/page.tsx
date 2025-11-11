@@ -26,6 +26,51 @@ export default function AboutPage() {
           About LayoffLens
         </h1>
 
+        {/* About the Site Section */}
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-8 mb-8">
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+            What is LayoffLens?
+          </h2>
+          <div className="space-y-4 text-gray-600 dark:text-gray-400 leading-relaxed">
+            <p>
+              LayoffLens is your comprehensive resource for tracking layoffs, job market trends, and career insights across industries. We automatically aggregate the latest news, analysis, and helpful resources to keep you informed about the evolving employment landscape.
+            </p>
+            <p>
+              Our platform continuously monitors trusted sources to bring you:
+            </p>
+            <ul className="space-y-2 ml-6">
+              <li className="flex items-start">
+                <svg className="w-5 h-5 text-indigo-600 dark:text-indigo-400 mt-0.5 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                <span><strong>Real-time layoff news</strong> from major tech companies and across all sectors</span>
+              </li>
+              <li className="flex items-start">
+                <svg className="w-5 h-5 text-indigo-600 dark:text-indigo-400 mt-0.5 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                <span><strong>Expert analysis and commentary</strong> on market trends and unemployment data</span>
+              </li>
+              <li className="flex items-start">
+                <svg className="w-5 h-5 text-indigo-600 dark:text-indigo-400 mt-0.5 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                <span><strong>Career resources</strong> including resume tips, interview guidance, and job search strategies</span>
+              </li>
+              <li className="flex items-start">
+                <svg className="w-5 h-5 text-indigo-600 dark:text-indigo-400 mt-0.5 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                <span><strong>Video content</strong> from industry experts and career coaches on YouTube</span>
+              </li>
+            </ul>
+            <p>
+              Whether you're navigating a career transition, staying informed about your industry, or researching job market conditions, LayoffLens provides the insights you need to make informed decisions about your career.
+            </p>
+          </div>
+        </div>
+
+        {/* About the Creator Section */}
         <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-8 mb-8">
           <div className="flex flex-col md:flex-row gap-8 mb-8">
             <img
