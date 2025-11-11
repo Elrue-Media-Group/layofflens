@@ -4,6 +4,7 @@ import { saveItem, FeedItem } from "../Shared/storage";
 import { calculateScore } from "../Shared/scoring";
 import { bestImageFor } from "../Shared/image-resolver";
 import { isVideoPlatform } from "../Shared/thumb";
+import { extractLayoffData } from "../Shared/layoff-extractor";
 
 const IMAGE_LOOKUP_CAP = 8; // Limit Serper Images API calls per run to stay within free tier
 
@@ -15,6 +16,9 @@ async function fetchAndSaveItems(): Promise<number> {
 
   const newsItems = await fetchNewsItems();
   for (const news of newsItems) {
+    // Extract layoff data using OpenAI
+    const layoffData = await extractLayoffData(news.title, news.snippet);
+
     const item: FeedItem = {
       partitionKey: dateStr,
       rowKey: Buffer.from(news.link).toString("base64").replace(/[/+=]/g, "").substring(0, 63),
@@ -27,6 +31,10 @@ async function fetchAndSaveItems(): Promise<number> {
       tags: JSON.stringify(extractTags(news.title, news.snippet)),
       score: 0,
       imageUrl: news.imageUrl || news.thumbnailUrl || undefined,
+      // Add layoff tracking data
+      companyName: layoffData.companyName,
+      layoffCount: layoffData.layoffCount,
+      sector: layoffData.sector,
     };
     
     // Enrich image if missing and we haven't hit the cap
@@ -60,6 +68,9 @@ async function fetchAndSaveItems(): Promise<number> {
 
   const videoItems = await fetchVideoItems();
   for (const video of videoItems) {
+    // Extract layoff data using OpenAI
+    const layoffData = await extractLayoffData(video.title, video.snippet);
+
     // Classify as video if it's from any known video platform
     const isVideo = isVideoPlatform(video.link);
     const item: FeedItem = {
@@ -74,6 +85,10 @@ async function fetchAndSaveItems(): Promise<number> {
       tags: JSON.stringify(extractTags(video.title, video.snippet)),
       score: 0,
       imageUrl: video.imageUrl || video.thumbnailUrl || undefined,
+      // Add layoff tracking data
+      companyName: layoffData.companyName,
+      layoffCount: layoffData.layoffCount,
+      sector: layoffData.sector,
     };
     
     // Enrich image if missing and we haven't hit the cap

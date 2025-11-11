@@ -15,6 +15,10 @@ export interface FeedItem {
   tags: string; // Stored as JSON string for Azure Table Storage
   score: number;
   imageUrl?: string; // Optional image URL from Serper
+  // Layoff tracking fields
+  companyName?: string; // Company mentioned in layoff news
+  layoffCount?: number; // Number of employees laid off
+  sector?: string; // Industry sector (Tech, Finance, Retail, etc.)
 }
 
 let tableClient: TableClient | null = null;
