@@ -2,6 +2,7 @@ import { fetchItems } from "@/lib/client";
 import FeedClient from "@/components/FeedClient";
 import TypeFilter from "@/components/TypeFilter";
 import CategoryFilter from "@/components/CategoryFilter";
+import HeroStatsBanner from "@/components/HeroStatsBanner";
 
 // Use ISR (Incremental Static Regeneration) - revalidate every hour
 // This ensures fresh data appears within an hour of Azure Function fetches
@@ -31,6 +32,9 @@ export default async function HomePage() {
 
   return (
     <div>
+      {/* Hero Stats Banner */}
+      <HeroStatsBanner />
+
       <div className="mb-8">
         <div className="flex items-center justify-between mb-3">
           <div>

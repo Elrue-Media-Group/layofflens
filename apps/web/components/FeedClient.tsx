@@ -17,6 +17,7 @@ export default function FeedClient({ initialItems, limit }: FeedClientProps) {
 
   const typeFilter = searchParams.get("filter") || "all";
   const categoryFilter = searchParams.get("category") || "all";
+  const searchQuery = searchParams.get("search") || "";
 
   useEffect(() => {
     // If we have initial items, use them. Otherwise, fetch fresh data.
@@ -48,6 +49,18 @@ export default function FeedClient({ initialItems, limit }: FeedClientProps) {
     if (categoryFilter !== "all") {
       const tags = typeof item.tags === 'string' ? JSON.parse(item.tags || '[]') : (item.tags || []);
       if (!tags.includes(categoryFilter)) {
+        return false;
+      }
+    }
+
+    // Search filter (case-insensitive search in title and snippet with word boundaries)
+    if (searchQuery) {
+      const text = `${item.title || ""} ${item.snippet || ""}`.toLowerCase();
+      // Use word boundary regex to match whole words only (e.g., "Intel" but not "intelligence")
+      // Escape special regex characters in the search query
+      const escapedQuery = searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp(`\\b${escapedQuery.toLowerCase()}\\b`);
+      if (!regex.test(text)) {
         return false;
       }
     }

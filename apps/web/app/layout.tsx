@@ -66,6 +66,12 @@ export default function RootLayout({
                   >
                     Archive
                   </a>
+                  <a
+                    href="/analytics"
+                    className="border-b-2 border-transparent hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 py-4 px-4 text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors"
+                  >
+                    Analytics
+                  </a>
                 </div>
                 <div className="flex items-center space-x-1">
                   <DarkModeToggle />

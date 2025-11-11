@@ -29,6 +29,10 @@ console.log("Loading FetchDailyTimer...");
 require("./FetchDailyTimer/index");
 console.log("✅ FetchDailyTimer registered");
 
+console.log("Loading GetLayoffStatsHttp...");
+require("./GetLayoffStatsHttp/index");
+console.log("✅ GetLayoffStatsHttp registered");
+
 console.log("=== LayoffLens Functions: All functions registered successfully ===");
 
 // CRITICAL: Export app for Worker Indexing to discover functions

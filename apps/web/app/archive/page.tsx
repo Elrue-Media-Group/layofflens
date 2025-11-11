@@ -1,9 +1,9 @@
 import { fetchItems, PaginatedResponse } from "@/lib/client";
-import FeedCard from "@/components/FeedCard";
+import FeedClient from "@/components/FeedClient";
 import TypeFilter from "@/components/TypeFilter";
 import CategoryFilter from "@/components/CategoryFilter";
 import DateRangeFilter from "@/components/DateRangeFilter";
-import Pagination from "@/components/Pagination";
+import SearchFilter from "@/components/SearchFilter";
 
 // Use ISR (Incremental Static Regeneration) - revalidate every hour
 // This ensures fresh data appears within an hour of Azure Function fetches
@@ -26,9 +26,6 @@ export default async function ArchivePage() {
     allFetchedItems = [];
   }
   
-  // For static export, show all items (filtering will be client-side)
-  const items = allFetchedItems;
-  
   // Extract all unique tags for the category filter
   const allTags = new Set<string>();
   allFetchedItems.forEach((item) => {
@@ -36,12 +33,7 @@ export default async function ArchivePage() {
     tags.forEach((tag: string) => allTags.add(tag));
   });
 
-  // For static export, we'll show all items (pagination/filtering client-side)
-  const pageSize = 50;
-  const totalItems = items.length;
-  const totalPages = Math.ceil(totalItems / pageSize);
-  const currentPage = 1;
-  const displayedItems = items.slice(0, pageSize);
+  const totalItems = allFetchedItems.length;
 
   return (
     <div>
@@ -58,42 +50,12 @@ export default async function ArchivePage() {
           <TypeFilter />
         </div>
         <div className="mt-4 space-y-3">
+          <SearchFilter />
           <DateRangeFilter />
           <CategoryFilter availableTags={Array.from(allTags)} />
         </div>
       </div>
-      {displayedItems.length === 0 ? (
-        <div className="text-center py-16 px-4">
-          <div className="max-w-md mx-auto">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
-              <svg className="w-8 h-8 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
-              Archive is empty
-            </h3>
-            <p className="text-gray-500 dark:text-gray-400">
-              No items found in the archive. Data will appear here once the API is running and fetching data.
-            </p>
-          </div>
-        </div>
-      ) : (
-        <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {displayedItems.map((item) => (
-              <FeedCard key={`${item.partitionKey}-${item.rowKey}`} item={item} />
-            ))}
-          </div>
-          {totalPages > 1 && (
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              totalItems={totalItems}
-            />
-          )}
-        </>
-      )}
+      <FeedClient initialItems={allFetchedItems} />
     </div>
   );
 }
