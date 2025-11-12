@@ -1,12 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Enable static export for Azure Storage static website hosting
-  output: 'export',
-  // Disable image optimization (not available in static export)
+  // Azure Static Web Apps with Next.js SSR support
+  // No output mode specified - lets Next.js use default server rendering
   images: {
     unoptimized: true,
   },
-  // Don't use trailing slash - it can prevent index.html generation
   trailingSlash: false,
 };
 
