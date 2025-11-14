@@ -61,7 +61,7 @@ export default async function ArchivePage({ searchParams }: ArchivePageProps) {
             <h2 className="text-4xl font-bold text-gray-900 dark:text-gray-100">
               Archive
             </h2>
-            <p className="text-lg text-gray-600 dark:text-gray-400 mt-1">
+            <p className="text-lg text-gray-600 dark:text-gray-400 mt-1" suppressHydrationWarning>
               Displaying {displayedItems} of {totalCount} items
             </p>
           </div>
@@ -75,12 +75,12 @@ export default async function ArchivePage({ searchParams }: ArchivePageProps) {
               Active filters:
             </span>
             {sectorParam && (
-              <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 text-sm rounded-full">
+              <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 text-sm rounded-full" suppressHydrationWarning>
                 Sector: {sectorParam}
               </span>
             )}
             {daysParam && (
-              <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 text-sm rounded-full">
+              <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 text-sm rounded-full" suppressHydrationWarning>
                 Last {daysParam} days
               </span>
             )}
