@@ -1,5 +1,3 @@
-import { execSync } from 'child_process';
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Azure Static Web Apps with Next.js SSR support
@@ -8,13 +6,10 @@ const nextConfig = {
     unoptimized: true,
   },
   trailingSlash: false,
-  // Use git commit SHA for build ID (stable, doesn't create infinite bundles)
+  // Use GitHub SHA from environment (set by GitHub Actions)
+  // Falls back to timestamp for local builds
   generateBuildId: async () => {
-    try {
-      return execSync('git rev-parse HEAD').toString().trim();
-    } catch {
-      return 'dev-build';
-    }
+    return process.env.GITHUB_SHA || 'local-' + Date.now();
   },
 };
 
