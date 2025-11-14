@@ -6,7 +6,10 @@ const nextConfig = {
     unoptimized: true,
   },
   trailingSlash: false,
+  // Force new build hash to bypass Azure cache
+  generateBuildId: async () => {
+    return 'build-' + Date.now();
+  },
 };
 
 export default nextConfig;
-
