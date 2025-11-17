@@ -5,12 +5,18 @@
 :root {
   --background: #fafafa;
   --foreground: #1a1a1a;
+  --tooltip-bg: rgba(255, 255, 255, 0.95);
+  --tooltip-border: #e5e7eb;
+  --tooltip-text: #111827;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0f0f0f;
     --foreground: #f5f5f5;
+    --tooltip-bg: rgba(31, 41, 55, 0.95);
+    --tooltip-border: #374151;
+    --tooltip-text: #f3f4f6;
   }
 }
 

@@ -119,20 +119,22 @@ export default function AnalyticsCharts({ stats }: AnalyticsChartsProps) {
               <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-gray-700" />
               <XAxis
                 dataKey="weekLabel"
-                className="text-gray-600 dark:text-gray-400"
-                tick={{ fill: 'currentColor' }}
+                tick={{ fill: '#9ca3af' }}
+                stroke="#9ca3af"
               />
               <YAxis
-                className="text-gray-600 dark:text-gray-400"
-                tick={{ fill: 'currentColor' }}
+                tick={{ fill: '#9ca3af' }}
+                stroke="#9ca3af"
               />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                  border: '1px solid #e5e7eb',
+                  backgroundColor: 'var(--tooltip-bg)',
+                  border: '1px solid var(--tooltip-border)',
                   borderRadius: '8px',
+                  color: 'var(--tooltip-text)',
                 }}
-                labelStyle={{ color: '#111827' }}
+                labelStyle={{ color: 'var(--tooltip-text)' }}
+                itemStyle={{ color: 'var(--tooltip-text)' }}
               />
               <Legend />
               <Line
@@ -163,22 +165,25 @@ export default function AnalyticsCharts({ stats }: AnalyticsChartsProps) {
                   <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-gray-700" />
                   <XAxis
                     dataKey="sector"
-                    className="text-gray-600 dark:text-gray-400"
-                    tick={{ fill: 'currentColor', fontSize: 12 }}
+                    tick={{ fill: '#9ca3af', fontSize: 12 }}
+                    stroke="#9ca3af"
                     angle={-45}
                     textAnchor="end"
                     height={80}
                   />
                   <YAxis
-                    className="text-gray-600 dark:text-gray-400"
-                    tick={{ fill: 'currentColor' }}
+                    tick={{ fill: '#9ca3af' }}
+                    stroke="#9ca3af"
                   />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                      border: '1px solid #e5e7eb',
+                      backgroundColor: 'var(--tooltip-bg)',
+                      border: '1px solid var(--tooltip-border)',
                       borderRadius: '8px',
+                      color: 'var(--tooltip-text)',
                     }}
+                    labelStyle={{ color: 'var(--tooltip-text)' }}
+                    itemStyle={{ color: 'var(--tooltip-text)' }}
                   />
                   <Bar
                     dataKey="count"
