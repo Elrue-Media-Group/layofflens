@@ -21,6 +21,16 @@ export default function ArchivePageClient() {
     const daysParam = searchParams.get("days");
     const sectorParam = searchParams.get("sector");
 
+    // Don't re-fetch if only client-side filters changed (category, search, filter)
+    // These are handled by FeedClient filtering
+    // Only re-fetch when days or sector changes (server-side filters)
+    const serverSideFiltersPresent = daysParam || sectorParam;
+
+    if (!serverSideFiltersPresent && items.length > 0) {
+      // Skip re-fetch, let FeedClient handle filtering
+      return;
+    }
+
     setLoading(true);
     const fetchOptions: { page: number; days?: number; sector?: string } = { page: 1 };
 
