@@ -11,9 +11,17 @@ export default function HomePageClient() {
   const [items, setItems] = useState<any[]>([]);
   const [allTags, setAllTags] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const [hasFetched, setHasFetched] = useState(false);
 
   useEffect(() => {
+    // Only fetch once - never re-fetch when filters change
+    // All filtering is done client-side by FeedClient
+    if (hasFetched) {
+      return;
+    }
+
     setLoading(true);
+    setHasFetched(true);
     fetchItems({ limit: 50 })
       .then((response) => {
         const fetchedItems = Array.isArray(response) ? response : [];
