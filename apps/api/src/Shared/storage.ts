@@ -72,10 +72,46 @@ export async function ensureTableExists(): Promise<void> {
   }
 }
 
+/**
+ * Get an existing item by partitionKey and rowKey
+ * Returns null if item doesn't exist
+ */
+export async function getItem(partitionKey: string, rowKey: string): Promise<FeedItem | null> {
+  await ensureTableExists();
+  const client = getTableClient();
+  try {
+    const entity = await client.getEntity<FeedItem>(partitionKey, rowKey);
+    return entity as FeedItem;
+  } catch (error: any) {
+    if (error.statusCode === 404) {
+      return null; // Item doesn't exist
+    }
+    throw error; // Other errors should be thrown
+  }
+}
+
+/**
+ * Save item, preserving original date if item already exists
+ * This prevents old videos/articles from appearing as new
+ */
 export async function saveItem(item: FeedItem): Promise<void> {
   await ensureTableExists();
   const client = getTableClient();
-  await client.upsertEntity(item, "Merge");
+
+  // Check if item already exists
+  const existing = await getItem(item.partitionKey, item.rowKey);
+
+  if (existing) {
+    // Item exists - preserve the original date
+    const itemToSave = {
+      ...item,
+      date: existing.date, // Keep original date
+    };
+    await client.upsertEntity(itemToSave, "Merge");
+  } else {
+    // New item - use the provided date
+    await client.upsertEntity(item, "Merge");
+  }
 }
 
 export async function getItemsForDays(days?: number): Promise<FeedItem[]> {
