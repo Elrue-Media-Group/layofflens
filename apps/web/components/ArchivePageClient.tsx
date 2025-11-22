@@ -37,7 +37,7 @@ export default function ArchivePageClient() {
     }
 
     setLoading(true);
-    const fetchOptions: { page: number; days?: number; sector?: string } = { page: 1 };
+    const fetchOptions: { days?: number; sector?: string } = {};
 
     if (daysParam) {
       const days = parseInt(daysParam, 10);
