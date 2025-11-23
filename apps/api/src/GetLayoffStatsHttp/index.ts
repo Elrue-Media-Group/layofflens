@@ -129,21 +129,15 @@ export async function getLayoffStatsHttp(
       }))
       .sort((a, b) => b.count - a.count);
 
-    // Extract company mentions from titles
+    // Extract company mentions from AI-extracted companyName field
     const companyMap = new Map<string, number>();
-    const commonCompanies = ['Amazon', 'Meta', 'Google', 'Microsoft', 'Apple', 'Tesla',
-                            'Facebook', 'Twitter', 'Netflix', 'Uber', 'Lyft', 'Salesforce',
-                            'Intel', 'AMD', 'Nvidia', 'IBM', 'Oracle', 'SAP', 'Dell', 'HP'];
 
     newsItems.forEach((item: any) => {
-      const text = `${item.title} ${item.snippet}`.toLowerCase();
-      commonCompanies.forEach((company) => {
-        // Use word boundary regex to match whole words only (e.g., "Intel" but not "intelligence")
-        const regex = new RegExp(`\\b${company.toLowerCase()}\\b`);
-        if (regex.test(text)) {
-          companyMap.set(company, (companyMap.get(company) || 0) + 1);
-        }
-      });
+      // Use AI-extracted companyName field if available
+      if (item.companyName && item.companyName !== 'null' && item.companyName !== 'undefined') {
+        const company = item.companyName;
+        companyMap.set(company, (companyMap.get(company) || 0) + 1);
+      }
     });
 
     const topCompanies: CompanyMention[] = Array.from(companyMap.entries())

@@ -74,7 +74,12 @@ Return only valid JSON, no explanation.`;
     }
 
     if (data.layoffCount && typeof data.layoffCount === "number" && data.layoffCount > 0) {
-      result.layoffCount = Math.floor(data.layoffCount);
+      const count = Math.floor(data.layoffCount);
+      // Filter out unrealistic numbers - largest single layoffs are typically under 50,000
+      // This prevents AI from extracting revenue/market cap figures as layoff counts
+      if (count <= 50000) {
+        result.layoffCount = count;
+      }
     }
 
     if (data.sector && typeof data.sector === "string") {
