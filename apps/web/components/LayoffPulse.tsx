@@ -71,10 +71,11 @@ export default function LayoffPulse() {
         const newsCount = items.filter((item: any) => item.type === 'news').length;
         const videoCount = items.filter((item: any) => item.type === 'video').length;
 
-        // Count by source (news only)
+        // Count by source (news only, exclude YouTube)
         const sourceCount: Record<string, number> = {};
         layoffItems.forEach((item: any) => {
-          if (item.source) {
+          // Only count news sources, not video platforms
+          if (item.source && item.type === 'news' && !item.source.includes('youtube.com')) {
             sourceCount[item.source] = (sourceCount[item.source] || 0) + 1;
           }
         });
