@@ -6,12 +6,9 @@ import { bestImageFor } from "../Shared/image-resolver";
 import { isVideoPlatform } from "../Shared/thumb";
 import { extractLayoffData } from "../Shared/layoff-extractor";
 
-const IMAGE_LOOKUP_CAP = 8; // Limit Serper Images API calls per run to stay within free tier
-
 async function fetchAndSaveItems(): Promise<number> {
   const now = new Date();
   let savedCount = 0;
-  let imageLookups = 0;
 
   const newsItems = await fetchNewsItems();
   for (const news of newsItems) {
@@ -64,27 +61,21 @@ async function fetchAndSaveItems(): Promise<number> {
     };
 
     // Enrich image for new items only (saves API calls on duplicates)
-    if (imageLookups < IMAGE_LOOKUP_CAP) {
-      try {
-        const enrichedImage = await bestImageFor({
-          url: item.link,
-          title: item.title,
-          // Don't pass Serper's low-res thumbnails - force Serper Images API lookup for better quality
-          image: undefined,
-          thumbnailUrl: undefined,
-          source: item.source,
-        });
-        // Only use if it's not a favicon (favicons are too small and blurry)
-        if (enrichedImage && !enrichedImage.includes('favicons')) {
-          item.imageUrl = enrichedImage;
-          imageLookups++;
-        }
-      } catch (error) {
-        // If lookup fails, leave imageUrl undefined (no blurry favicon)
+    try {
+      const enrichedImage = await bestImageFor({
+        url: item.link,
+        title: item.title,
+        image: undefined,
+        thumbnailUrl: undefined,
+        source: item.source,
+      });
+
+      if (enrichedImage && !enrichedImage.includes('favicons')) {
+        item.imageUrl = enrichedImage;
       }
+    } catch (error) {
+      // If lookup fails, leave imageUrl undefined (no blurry favicon)
     }
-    // If cap is reached or lookup failed, leave imageUrl undefined
-    // Cards will display without image rather than blurry favicon
     
     item.score = calculateScore(item, now);
     await saveItem(item);
@@ -146,27 +137,21 @@ async function fetchAndSaveItems(): Promise<number> {
     };
 
     // Enrich image for new items only (saves API calls on duplicates)
-    if (imageLookups < IMAGE_LOOKUP_CAP) {
-      try {
-        const enrichedImage = await bestImageFor({
-          url: item.link,
-          title: item.title,
-          // Don't pass Serper's low-res thumbnails - let it extract YouTube high-res or use Serper Images
-          image: undefined,
-          thumbnailUrl: undefined,
-          source: item.source,
-        });
-        // Only use if it's not a favicon (favicons are too small and blurry)
-        if (enrichedImage && !enrichedImage.includes('favicons')) {
-          item.imageUrl = enrichedImage;
-          imageLookups++;
-        }
-      } catch (error) {
-        // If lookup fails, leave imageUrl undefined (no blurry favicon)
+    try {
+      const enrichedImage = await bestImageFor({
+        url: item.link,
+        title: item.title,
+        image: undefined,
+        thumbnailUrl: undefined,
+        source: item.source,
+      });
+
+      if (enrichedImage && !enrichedImage.includes('favicons')) {
+        item.imageUrl = enrichedImage;
       }
+    } catch (error) {
+      // If lookup fails, leave imageUrl undefined (no blurry favicon)
     }
-    // If cap is reached or lookup failed, leave imageUrl undefined
-    // Cards will display without image rather than blurry favicon
     
     item.score = calculateScore(item, now);
     await saveItem(item);
