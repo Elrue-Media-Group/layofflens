@@ -49,3 +49,8 @@ Thumbs.db
 # Misc
 *.tsbuildinfo
 
+
+# Temporary analysis and research files
+SERPER-ANALYSIS.md
+SERPER-FIELDS-AVAILABLE.md
+**/test-serper-*.js
