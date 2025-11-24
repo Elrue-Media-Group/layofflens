@@ -111,3 +111,38 @@ export async function fetchLayoffStats(days: number = 90): Promise<LayoffStats |
   }
 }
 
+export interface TopChannelsData {
+  channels: Array<{
+    channel: string;
+    videoCount: number;
+    totalDuration: number;
+    avgDuration: number;
+    avgPosition: number;
+  }>;
+  summary: {
+    totalVideos: number;
+    totalChannels: number;
+    totalWatchTime: number;
+  };
+}
+
+export async function fetchTopChannels(days: number = 30): Promise<TopChannelsData | null> {
+  try {
+    const baseUrl = API_BASE.endsWith('/api') ? API_BASE : `${API_BASE}/api`;
+    const url = `${baseUrl}/GetTopChannelsHttp?days=${days}`;
+    const response = await fetch(url, {
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      console.warn(`Top Channels API returned ${response.status}: ${response.statusText}`);
+      return null;
+    }
+
+    return response.json();
+  } catch (error) {
+    console.warn("Failed to fetch top channels from API:", error);
+    return null;
+  }
+}
+

@@ -1,23 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
-interface ChannelStats {
-  channel: string;
-  videoCount: number;
-  totalDuration: number;
-  avgDuration: number;
-  avgPosition: number;
-}
-
-interface TopChannelsData {
-  channels: ChannelStats[];
-  summary: {
-    totalVideos: number;
-    totalChannels: number;
-    totalWatchTime: number;
-  };
-}
+import { fetchTopChannels, TopChannelsData } from "@/lib/client";
 
 function secondsToReadable(seconds: number): string {
   const hours = Math.floor(seconds / 3600);
@@ -35,8 +19,8 @@ export default function TopChannelsWidget() {
   const [error, setError] = useState(false);
 
   useEffect(() => {
-    fetch("http://localhost:7071/api/GetTopChannelsHttp?days=30")
-      .then((res) => res.json())
+    setLoading(true);
+    fetchTopChannels(30)
       .then((data) => {
         setData(data);
         setLoading(false);
