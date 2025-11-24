@@ -33,6 +33,10 @@ console.log("Loading GetLayoffStatsHttp...");
 require("./GetLayoffStatsHttp/index");
 console.log("✅ GetLayoffStatsHttp registered");
 
+console.log("Loading GetTopChannelsHttp...");
+require("./GetTopChannelsHttp/index");
+console.log("✅ GetTopChannelsHttp registered");
+
 console.log("=== LayoffLens Functions: All functions registered successfully ===");
 
 // CRITICAL: Export app for Worker Indexing to discover functions

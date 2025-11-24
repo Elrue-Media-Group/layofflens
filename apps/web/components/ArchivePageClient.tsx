@@ -22,9 +22,10 @@ export default function ArchivePageClient() {
   useEffect(() => {
     const daysParam = searchParams.get("days");
     const sectorParam = searchParams.get("sector");
+    const channelParam = searchParams.get("channel");
 
     // Create a key for the server-side params to detect changes
-    const currentFetchKey = `${daysParam || "all"}-${sectorParam || "all"}`;
+    const currentFetchKey = `${daysParam || "all"}-${sectorParam || "all"}-${channelParam || "all"}`;
 
     // Skip re-fetch only if:
     // 1. We've already done an initial fetch
@@ -37,7 +38,7 @@ export default function ArchivePageClient() {
     }
 
     setLoading(true);
-    const fetchOptions: { days?: number; sector?: string } = {};
+    const fetchOptions: { days?: number; sector?: string; channel?: string } = {};
 
     if (daysParam) {
       const days = parseInt(daysParam, 10);
@@ -47,6 +48,9 @@ export default function ArchivePageClient() {
     }
     if (sectorParam) {
       fetchOptions.sector = sectorParam;
+    }
+    if (channelParam) {
+      fetchOptions.channel = channelParam;
     }
 
     fetchItems(fetchOptions)

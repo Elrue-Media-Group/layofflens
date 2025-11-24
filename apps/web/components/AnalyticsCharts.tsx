@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { LayoffStats } from "@/lib/client";
+import TopChannelsWidget from "@/components/TopChannelsWidget";
 import {
   LineChart,
   Line,
@@ -46,9 +47,12 @@ export default function AnalyticsCharts({ stats }: AnalyticsChartsProps) {
     weekLabel: `Week ${item.week.split('-W')[1]}`,
   }));
 
-  // Handle sector bar click - navigate to archive with sector filter and 90-day range (matches analytics timeframe)
+  // Show only top 5 companies
+  const displayedCompanies = topCompanies.slice(0, 5);
+
+  // Handle sector bar click - navigate to archive with sector filter and 30-day range (matches analytics timeframe)
   const handleSectorClick = (sector: string) => {
-    router.push(`/archive?sector=${encodeURIComponent(sector)}&days=90`);
+    router.push(`/archive?sector=${encodeURIComponent(sector)}&days=30`);
   };
 
   return (
@@ -203,19 +207,19 @@ export default function AnalyticsCharts({ stats }: AnalyticsChartsProps) {
         )}
 
         {/* Top Companies */}
-        {topCompanies.length > 0 && (
+        {displayedCompanies.length > 0 && (
           <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6">
             <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
               Top Companies Mentioned
             </h2>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-              News mentions in last 90 days
+              News mentions in last 30 days
             </p>
             <div className="space-y-4">
-              {topCompanies.map((company, index) => (
+              {displayedCompanies.map((company, index) => (
                 <Link
                   key={company.company}
-                  href={`/archive?days=90&search=${encodeURIComponent(company.company)}&category=Layoffs&filter=news`}
+                  href={`/archive?days=30&search=${encodeURIComponent(company.company)}&category=Layoffs&filter=news`}
                   className="flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg p-3 -mx-3 transition-colors group"
                 >
                   <div className="flex items-center gap-3">
@@ -237,7 +241,7 @@ export default function AnalyticsCharts({ stats }: AnalyticsChartsProps) {
                       <div
                         className="h-2 rounded-full"
                         style={{
-                          width: `${(company.count / topCompanies[0].count) * 100}%`,
+                          width: `${(company.count / displayedCompanies[0].count) * 100}%`,
                           backgroundColor: COLORS[index % COLORS.length],
                         }}
                       />
@@ -252,6 +256,9 @@ export default function AnalyticsCharts({ stats }: AnalyticsChartsProps) {
           </div>
         )}
       </div>
+
+      {/* Top YouTube Channels Widget */}
+      <TopChannelsWidget />
 
       {/* Empty States */}
       {bySector.length === 0 && (

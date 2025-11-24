@@ -12,8 +12,9 @@ export async function listItemsHttp(
     const limitParam = request.query.get("limit");
     const pageParam = request.query.get("page");
     const sectorParam = request.query.get("sector");
+    const channelParam = request.query.get("channel");
 
-    context.log("Query params:", { daysParam, limitParam, pageParam, sectorParam });
+    context.log("Query params:", { daysParam, limitParam, pageParam, sectorParam, channelParam });
 
     let items: any[];
 
@@ -48,6 +49,13 @@ export async function listItemsHttp(
       context.log("Filtering by sector:", sectorParam);
       items = items.filter((item: any) => item.sector === sectorParam);
       context.log("Items after sector filter:", items.length);
+    }
+
+    // Apply channel filter if specified (before pagination)
+    if (channelParam) {
+      context.log("Filtering by channel:", channelParam);
+      items = items.filter((item: any) => item.channel === channelParam);
+      context.log("Items after channel filter:", items.length);
     }
 
     // Apply limit if specified (for Current feed)

@@ -53,7 +53,7 @@ export interface LayoffStats {
   }>;
 }
 
-export async function fetchItems(options?: { days?: number; limit?: number; page?: number; sector?: string }): Promise<FeedItem[] | PaginatedResponse> {
+export async function fetchItems(options?: { days?: number; limit?: number; page?: number; sector?: string; channel?: string }): Promise<FeedItem[] | PaginatedResponse> {
   try {
     const params = new URLSearchParams();
     if (options?.days) {
@@ -67,6 +67,9 @@ export async function fetchItems(options?: { days?: number; limit?: number; page
     }
     if (options?.sector) {
       params.set("sector", options.sector);
+    }
+    if (options?.channel) {
+      params.set("channel", options.channel);
     }
 
     // API_BASE should already include /api, so we just append the function name

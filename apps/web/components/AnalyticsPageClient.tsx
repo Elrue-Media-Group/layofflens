@@ -11,7 +11,7 @@ export default function AnalyticsPageClient() {
 
   useEffect(() => {
     setLoading(true);
-    fetchLayoffStats(90)
+    fetchLayoffStats(30)
       .then((data) => setStats(data))
       .catch((error) => {
         console.warn('Failed to fetch stats:', error);
