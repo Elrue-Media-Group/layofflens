@@ -15,12 +15,39 @@ async function fetchAndSaveItems(): Promise<number> {
 
   const newsItems = await fetchNewsItems();
   for (const news of newsItems) {
-    // Extract layoff data using OpenAI
+    const partitionKey = "news";
+    const rowKey = Buffer.from(news.link).toString("base64").replace(/[/+=]/g, "").substring(0, 63);
+
+    // Check if item already exists in storage
+    const { getItem } = await import("../Shared/storage");
+    const existingItem = await getItem(partitionKey, rowKey);
+
+    // If item exists and already has a good image, skip expensive enrichment
+    if (existingItem?.imageUrl && !existingItem.imageUrl.includes('encrypted-tbn0.gstatic.com')) {
+      // Existing item with valid image - just update metadata and score
+      const layoffData = await extractLayoffData(news.title, news.snippet);
+      const item: FeedItem = {
+        ...existingItem,
+        title: news.title,
+        snippet: news.snippet,
+        tags: JSON.stringify(extractTags(news.title, news.snippet)),
+        score: 0,
+        companyName: layoffData.companyName,
+        layoffCount: layoffData.layoffCount,
+        sector: layoffData.sector,
+      };
+      item.score = calculateScore(item, now);
+      await saveItem(item);
+      savedCount++;
+      continue; // Skip image enrichment for existing items
+    }
+
+    // New item or existing item with bad/no image - do full processing
     const layoffData = await extractLayoffData(news.title, news.snippet);
 
     const item: FeedItem = {
-      partitionKey: "news", // Use constant partition key to prevent duplicates
-      rowKey: Buffer.from(news.link).toString("base64").replace(/[/+=]/g, "").substring(0, 63),
+      partitionKey,
+      rowKey,
       title: news.title,
       link: news.link,
       source: news.source || new URL(news.link).hostname,
@@ -35,31 +62,29 @@ async function fetchAndSaveItems(): Promise<number> {
       layoffCount: layoffData.layoffCount,
       sector: layoffData.sector,
     };
-    
-    // Enrich image if missing and we haven't hit the cap
-    if (!item.imageUrl) {
-      if (imageLookups < IMAGE_LOOKUP_CAP) {
-        try {
-          const enrichedImage = await bestImageFor({
-            url: item.link,
-            title: item.title,
-            // Don't pass Serper's low-res thumbnails - force Serper Images API lookup for better quality
-            image: undefined,
-            thumbnailUrl: undefined,
-            source: item.source,
-          });
-          // Only use if it's not a favicon (favicons are too small and blurry)
-          if (enrichedImage && !enrichedImage.includes('favicons')) {
-            item.imageUrl = enrichedImage;
-            imageLookups++;
-          }
-        } catch (error) {
-          // If lookup fails, leave imageUrl undefined (no blurry favicon)
+
+    // Enrich image for new items only (saves API calls on duplicates)
+    if (imageLookups < IMAGE_LOOKUP_CAP) {
+      try {
+        const enrichedImage = await bestImageFor({
+          url: item.link,
+          title: item.title,
+          // Don't pass Serper's low-res thumbnails - force Serper Images API lookup for better quality
+          image: undefined,
+          thumbnailUrl: undefined,
+          source: item.source,
+        });
+        // Only use if it's not a favicon (favicons are too small and blurry)
+        if (enrichedImage && !enrichedImage.includes('favicons')) {
+          item.imageUrl = enrichedImage;
+          imageLookups++;
         }
+      } catch (error) {
+        // If lookup fails, leave imageUrl undefined (no blurry favicon)
       }
-      // If cap is reached or lookup failed, leave imageUrl undefined
-      // Cards will display without image rather than blurry favicon
     }
+    // If cap is reached or lookup failed, leave imageUrl undefined
+    // Cards will display without image rather than blurry favicon
     
     item.score = calculateScore(item, now);
     await saveItem(item);
@@ -68,14 +93,43 @@ async function fetchAndSaveItems(): Promise<number> {
 
   const videoItems = await fetchVideoItems();
   for (const video of videoItems) {
-    // Extract layoff data using OpenAI
+    const partitionKey = "news";
+    const rowKey = Buffer.from(video.link).toString("base64").replace(/[/+=]/g, "").substring(0, 63);
+
+    // Check if item already exists in storage
+    const { getItem } = await import("../Shared/storage");
+    const existingItem = await getItem(partitionKey, rowKey);
+
+    // If item exists and already has a good image, skip expensive enrichment
+    if (existingItem?.imageUrl && !existingItem.imageUrl.includes('encrypted-tbn0.gstatic.com')) {
+      // Existing item with valid image - just update metadata and score
+      const layoffData = await extractLayoffData(video.title, video.snippet);
+      const isVideo = isVideoPlatform(video.link);
+      const item: FeedItem = {
+        ...existingItem,
+        title: video.title,
+        snippet: video.snippet,
+        type: isVideo ? "video" : "news",
+        tags: JSON.stringify(extractTags(video.title, video.snippet)),
+        score: 0,
+        companyName: layoffData.companyName,
+        layoffCount: layoffData.layoffCount,
+        sector: layoffData.sector,
+      };
+      item.score = calculateScore(item, now);
+      await saveItem(item);
+      savedCount++;
+      continue; // Skip image enrichment for existing items
+    }
+
+    // New item or existing item with bad/no image - do full processing
     const layoffData = await extractLayoffData(video.title, video.snippet);
 
     // Classify as video if it's from any known video platform
     const isVideo = isVideoPlatform(video.link);
     const item: FeedItem = {
-      partitionKey: "news", // Use constant partition key to prevent duplicates
-      rowKey: Buffer.from(video.link).toString("base64").replace(/[/+=]/g, "").substring(0, 63),
+      partitionKey,
+      rowKey,
       title: video.title,
       link: video.link,
       source: video.source || new URL(video.link).hostname,
@@ -90,31 +144,29 @@ async function fetchAndSaveItems(): Promise<number> {
       layoffCount: layoffData.layoffCount,
       sector: layoffData.sector,
     };
-    
-    // Enrich image if missing and we haven't hit the cap
-    if (!item.imageUrl) {
-      if (imageLookups < IMAGE_LOOKUP_CAP) {
-        try {
-          const enrichedImage = await bestImageFor({
-            url: item.link,
-            title: item.title,
-            // Don't pass Serper's low-res thumbnails - let it extract YouTube high-res or use Serper Images
-            image: undefined,
-            thumbnailUrl: undefined,
-            source: item.source,
-          });
-          // Only use if it's not a favicon (favicons are too small and blurry)
-          if (enrichedImage && !enrichedImage.includes('favicons')) {
-            item.imageUrl = enrichedImage;
-            imageLookups++;
-          }
-        } catch (error) {
-          // If lookup fails, leave imageUrl undefined (no blurry favicon)
+
+    // Enrich image for new items only (saves API calls on duplicates)
+    if (imageLookups < IMAGE_LOOKUP_CAP) {
+      try {
+        const enrichedImage = await bestImageFor({
+          url: item.link,
+          title: item.title,
+          // Don't pass Serper's low-res thumbnails - let it extract YouTube high-res or use Serper Images
+          image: undefined,
+          thumbnailUrl: undefined,
+          source: item.source,
+        });
+        // Only use if it's not a favicon (favicons are too small and blurry)
+        if (enrichedImage && !enrichedImage.includes('favicons')) {
+          item.imageUrl = enrichedImage;
+          imageLookups++;
         }
+      } catch (error) {
+        // If lookup fails, leave imageUrl undefined (no blurry favicon)
       }
-      // If cap is reached or lookup failed, leave imageUrl undefined
-      // Cards will display without image rather than blurry favicon
     }
+    // If cap is reached or lookup failed, leave imageUrl undefined
+    // Cards will display without image rather than blurry favicon
     
     item.score = calculateScore(item, now);
     await saveItem(item);

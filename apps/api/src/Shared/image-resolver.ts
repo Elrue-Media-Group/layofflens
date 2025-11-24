@@ -11,17 +11,19 @@ export interface ImageItem {
 
 /**
  * Find the best image for an item using multiple strategies
- * 1. Use provided image/thumbnailUrl
- * 2. Extract YouTube thumbnail
- * 3. Try Serper Images API (with site filter)
+ * 1. Use provided image/thumbnailUrl (if high quality, not low-res Google thumbnails)
+ * 2. Extract YouTube thumbnail (high-res maxresdefault.jpg)
+ * 3. Try Serper Images API (with site filter for better quality)
  * 4. Return undefined if no image found (no blurry favicons)
  */
 export async function bestImageFor(item: ImageItem): Promise<string | undefined> {
-  // 1) Provided by result
+  // 1) Provided by result (but reject if it's a low-res Google thumbnail)
   const direct = item.image || item.thumbnailUrl;
-  if (direct) return direct;
+  if (direct && !direct.includes('encrypted-tbn0.gstatic.com')) {
+    return direct;
+  }
 
-  // 2) YouTube derived
+  // 2) YouTube derived - high-res maxresdefault.jpg
   const yt = youtubeThumb(item.url);
   if (yt) return yt;
 
