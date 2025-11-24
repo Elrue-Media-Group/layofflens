@@ -43,8 +43,9 @@ async function fetchAndSaveItems(): Promise<number> {
           const enrichedImage = await bestImageFor({
             url: item.link,
             title: item.title,
-            image: news.imageUrl,
-            thumbnailUrl: news.thumbnailUrl,
+            // Don't pass Serper's low-res thumbnails - force Serper Images API lookup for better quality
+            image: undefined,
+            thumbnailUrl: undefined,
             source: item.source,
           });
           // Only use if it's not a favicon (favicons are too small and blurry)
@@ -97,8 +98,9 @@ async function fetchAndSaveItems(): Promise<number> {
           const enrichedImage = await bestImageFor({
             url: item.link,
             title: item.title,
-            image: video.imageUrl,
-            thumbnailUrl: video.thumbnailUrl,
+            // Don't pass Serper's low-res thumbnails - let it extract YouTube high-res or use Serper Images
+            image: undefined,
+            thumbnailUrl: undefined,
             source: item.source,
           });
           // Only use if it's not a favicon (favicons are too small and blurry)
