@@ -34,6 +34,8 @@ async function fetchAndSaveItems(): Promise<number> {
       companyName: layoffData.companyName,
       layoffCount: layoffData.layoffCount,
       sector: layoffData.sector,
+      // Add Serper metadata
+      position: news.position,
     };
     
     // Enrich image if missing and we haven't hit the cap
@@ -88,6 +90,10 @@ async function fetchAndSaveItems(): Promise<number> {
       companyName: layoffData.companyName,
       layoffCount: layoffData.layoffCount,
       sector: layoffData.sector,
+      // Add video-specific Serper data
+      channel: video.channel,
+      duration: video.duration,
+      position: video.position,
     };
     
     // Enrich image if missing and we haven't hit the cap

@@ -19,6 +19,11 @@ export interface FeedItem {
   companyName?: string; // Company mentioned in layoff news
   layoffCount?: number; // Number of employees laid off
   sector?: string; // Industry sector (Tech, Finance, Retail, etc.)
+  // Video-specific fields from Serper /videos endpoint
+  channel?: string; // YouTube channel name
+  duration?: string; // Video duration (e.g., "8:59")
+  // Search metadata from Serper
+  position?: number; // Search result ranking
 }
 
 let tableClient: TableClient | null = null;

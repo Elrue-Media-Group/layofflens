@@ -9,10 +9,19 @@ export interface SerperResult {
   source?: string;
   imageUrl?: string;
   thumbnailUrl?: string;
+  // Fields from /news endpoint
+  date?: string;
+  position?: number;
+  // Fields from /videos endpoint
+  channel?: string;
+  duration?: string;
+  videoUrl?: string;
 }
 
 export interface SerperResponse {
-  organic: SerperResult[];
+  organic?: SerperResult[];  // Generic /search endpoint
+  news?: SerperResult[];      // /news endpoint
+  videos?: SerperResult[];    // /videos endpoint
 }
 
 const NEWS_QUERIES = [
@@ -39,7 +48,7 @@ export async function fetchNewsItems(): Promise<SerperResult[]> {
   for (const query of NEWS_QUERIES) {
     try {
       const response = await axios.post<SerperResponse>(
-        "https://google.serper.dev/search",
+        "https://google.serper.dev/news",
         {
           q: query,
           num: 10,
@@ -52,11 +61,21 @@ export async function fetchNewsItems(): Promise<SerperResult[]> {
         }
       );
 
-      if (response.data.organic) {
+      // /news endpoint returns { news: [...] }, not { organic: [...] }
+      const results = response.data.news || response.data.organic || [];
+      if (results.length > 0) {
+        // DEBUG: Log full response to see all available fields (only once)
+        if (allResults.length === 0) {
+          console.log('=== SERPER NEWS RESPONSE (First Result) ===');
+          console.log(JSON.stringify(results[0], null, 2));
+          console.log('=== FULL RESPONSE KEYS ===');
+          console.log(Object.keys(response.data));
+        }
+
         // Enrich results: use Serper's imageUrl/thumbnailUrl if provided, or extract YouTube thumbnails
-        for (const result of response.data.organic) {
+        for (const result of results) {
           const enriched: SerperResult = { ...result };
-          
+
           // If Serper provides imageUrl/thumbnailUrl, use it
           if (result.imageUrl || result.thumbnailUrl) {
             enriched.imageUrl = result.imageUrl || result.thumbnailUrl;
@@ -67,7 +86,7 @@ export async function fetchNewsItems(): Promise<SerperResult[]> {
               enriched.imageUrl = ytThumb;
             }
           }
-          
+
           allResults.push(enriched);
         }
       }
@@ -85,7 +104,7 @@ export async function fetchVideoItems(): Promise<SerperResult[]> {
   for (const query of VIDEO_QUERIES) {
     try {
       const response = await axios.post<SerperResponse>(
-        "https://google.serper.dev/search",
+        "https://google.serper.dev/videos",
         {
           q: query,
           num: 10,
@@ -98,11 +117,21 @@ export async function fetchVideoItems(): Promise<SerperResult[]> {
         }
       );
 
-      if (response.data.organic) {
+      // /videos endpoint returns { videos: [...] }, not { organic: [...] }
+      const results = response.data.videos || response.data.organic || [];
+      if (results.length > 0) {
+        // DEBUG: Log full response to see all available fields (only once)
+        if (allResults.length === 0) {
+          console.log('=== SERPER VIDEO RESPONSE (First Result) ===');
+          console.log(JSON.stringify(results[0], null, 2));
+          console.log('=== VIDEO RESPONSE KEYS ===');
+          console.log(Object.keys(response.data));
+        }
+
         // Enrich results: use Serper's imageUrl/thumbnailUrl if provided, or extract YouTube thumbnails
-        for (const result of response.data.organic) {
+        for (const result of results) {
           const enriched: SerperResult = { ...result };
-          
+
           // If Serper provides imageUrl/thumbnailUrl, use it
           if (result.imageUrl || result.thumbnailUrl) {
             enriched.imageUrl = result.imageUrl || result.thumbnailUrl;
@@ -113,7 +142,7 @@ export async function fetchVideoItems(): Promise<SerperResult[]> {
               enriched.imageUrl = ytThumb;
             }
           }
-          
+
           allResults.push(enriched);
         }
       }
