@@ -72,14 +72,11 @@ jobs:
         run: |
           # Set each setting individually to avoid clearing existing values
           # Note: WEBSITE_RUN_FROM_PACKAGE is not supported in Flex Consumption
+          # Note: FUNCTIONS_WORKER_RUNTIME is not supported in Flex Consumption (auto-detected)
           az functionapp config appsettings set \
             --name layofflens-func \
             --resource-group LayoffLens \
             --settings FUNCTIONS_EXTENSION_VERSION=~4 || true
-          az functionapp config appsettings set \
-            --name layofflens-func \
-            --resource-group LayoffLens \
-            --settings FUNCTIONS_WORKER_RUNTIME=node || true
           az functionapp config appsettings set \
             --name layofflens-func \
             --resource-group LayoffLens \
