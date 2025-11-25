@@ -6,6 +6,9 @@ import GoogleAnalytics from "@/components/GoogleAnalytics";
 export const metadata: Metadata = {
   title: "LayoffLens - Daily AI-Powered Layoff Tracker",
   description: "Track the latest news, videos, and insights about layoffs, unemployment, and the impact of AI and automation on the job market.",
+  icons: {
+    icon: "https://layofflens.blob.core.windows.net/layofflens/layofffavi.png",
+  },
 };
 
 export default function RootLayout({
