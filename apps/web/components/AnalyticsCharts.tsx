@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { LayoffStats } from "@/lib/client";
@@ -15,9 +16,6 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
 } from "recharts";
 
 interface AnalyticsChartsProps {
@@ -40,6 +38,11 @@ const COLORS = [
 export default function AnalyticsCharts({ stats }: AnalyticsChartsProps) {
   const { summary, byWeek, bySector, topCompanies } = stats;
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Format week labels for better readability
   const weeklyData = byWeek.map((item) => ({
@@ -118,40 +121,46 @@ export default function AnalyticsCharts({ stats }: AnalyticsChartsProps) {
           Weekly Trends
         </h2>
         <div className="h-80">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={weeklyData}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-gray-700" />
-              <XAxis
-                dataKey="weekLabel"
-                tick={{ fill: '#9ca3af' }}
-                stroke="#9ca3af"
-              />
-              <YAxis
-                tick={{ fill: '#9ca3af' }}
-                stroke="#9ca3af"
-              />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: 'var(--tooltip-bg)',
-                  border: '1px solid var(--tooltip-border)',
-                  borderRadius: '8px',
-                  color: 'var(--tooltip-text)',
-                }}
-                labelStyle={{ color: 'var(--tooltip-text)' }}
-                itemStyle={{ color: 'var(--tooltip-text)' }}
-              />
-              <Legend />
-              <Line
-                type="monotone"
-                dataKey="count"
-                stroke="#6366f1"
-                strokeWidth={2}
-                name="Articles"
-                dot={{ fill: '#6366f1', r: 4 }}
-                activeDot={{ r: 6 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
+          {mounted ? (
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={weeklyData}>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-gray-700" />
+                <XAxis
+                  dataKey="weekLabel"
+                  tick={{ fill: '#9ca3af' }}
+                  stroke="#9ca3af"
+                />
+                <YAxis
+                  tick={{ fill: '#9ca3af' }}
+                  stroke="#9ca3af"
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: 'var(--tooltip-bg)',
+                    border: '1px solid var(--tooltip-border)',
+                    borderRadius: '8px',
+                    color: 'var(--tooltip-text)',
+                  }}
+                  labelStyle={{ color: 'var(--tooltip-text)' }}
+                  itemStyle={{ color: 'var(--tooltip-text)' }}
+                />
+                <Legend />
+                <Line
+                  type="monotone"
+                  dataKey="count"
+                  stroke="#6366f1"
+                  strokeWidth={2}
+                  name="Articles"
+                  dot={{ fill: '#6366f1', r: 4 }}
+                  activeDot={{ r: 6 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex items-center justify-center h-full text-gray-500 dark:text-gray-400">
+              Loading chart...
+            </div>
+          )}
         </div>
       </div>
 
@@ -164,44 +173,50 @@ export default function AnalyticsCharts({ stats }: AnalyticsChartsProps) {
               By Sector
             </h2>
             <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={bySector}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-gray-700" />
-                  <XAxis
-                    dataKey="sector"
-                    tick={{ fill: '#9ca3af', fontSize: 12 }}
-                    stroke="#9ca3af"
-                    angle={-45}
-                    textAnchor="end"
-                    height={80}
-                  />
-                  <YAxis
-                    tick={{ fill: '#9ca3af' }}
-                    stroke="#9ca3af"
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: 'var(--tooltip-bg)',
-                      border: '1px solid var(--tooltip-border)',
-                      borderRadius: '8px',
-                      color: 'var(--tooltip-text)',
-                    }}
-                    labelStyle={{ color: 'var(--tooltip-text)' }}
-                    itemStyle={{ color: 'var(--tooltip-text)' }}
-                  />
-                  <Bar
-                    dataKey="count"
-                    fill="#6366f1"
-                    name="Articles"
-                    onClick={(data: any) => {
-                      if (data?.payload?.sector) {
-                        handleSectorClick(data.payload.sector);
-                      }
-                    }}
-                    cursor="pointer"
-                  />
-                </BarChart>
-              </ResponsiveContainer>
+              {mounted ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={bySector}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-gray-700" />
+                    <XAxis
+                      dataKey="sector"
+                      tick={{ fill: '#9ca3af', fontSize: 12 }}
+                      stroke="#9ca3af"
+                      angle={-45}
+                      textAnchor="end"
+                      height={80}
+                    />
+                    <YAxis
+                      tick={{ fill: '#9ca3af' }}
+                      stroke="#9ca3af"
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: 'var(--tooltip-bg)',
+                        border: '1px solid var(--tooltip-border)',
+                        borderRadius: '8px',
+                        color: 'var(--tooltip-text)',
+                      }}
+                      labelStyle={{ color: 'var(--tooltip-text)' }}
+                      itemStyle={{ color: 'var(--tooltip-text)' }}
+                    />
+                    <Bar
+                      dataKey="count"
+                      fill="#6366f1"
+                      name="Articles"
+                      onClick={(data: any) => {
+                        if (data?.payload?.sector) {
+                          handleSectorClick(data.payload.sector);
+                        }
+                      }}
+                      cursor="pointer"
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex items-center justify-center h-full text-gray-500 dark:text-gray-400">
+                  Loading chart...
+                </div>
+              )}
             </div>
           </div>
         )}
