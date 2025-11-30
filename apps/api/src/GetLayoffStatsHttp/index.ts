@@ -129,14 +129,33 @@ export async function getLayoffStatsHttp(
       }))
       .sort((a, b) => b.count - a.count);
 
-    // Extract company mentions from AI-extracted companyName field
+    // Extract company mentions by searching title/snippet text
+    // First, collect unique company names from AI-extracted companyName field
+    const uniqueCompanies = new Set<string>();
+    newsItems.forEach((item: any) => {
+      if (item.companyName && item.companyName !== 'null' && item.companyName !== 'undefined') {
+        uniqueCompanies.add(item.companyName);
+      }
+    });
+
+    // Now count how many articles mention each company in title or snippet
     const companyMap = new Map<string, number>();
 
-    newsItems.forEach((item: any) => {
-      // Use AI-extracted companyName field if available
-      if (item.companyName && item.companyName !== 'null' && item.companyName !== 'undefined') {
-        const company = item.companyName;
-        companyMap.set(company, (companyMap.get(company) || 0) + 1);
+    uniqueCompanies.forEach((company) => {
+      // Escape special regex characters and create word boundary regex
+      const escapedCompany = company.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp(`\\b${escapedCompany}\\b`, 'i');
+
+      let count = 0;
+      newsItems.forEach((item: any) => {
+        const text = `${item.title || ""} ${item.snippet || ""}`;
+        if (regex.test(text)) {
+          count++;
+        }
+      });
+
+      if (count > 0) {
+        companyMap.set(company, count);
       }
     });
 
