@@ -8,6 +8,8 @@ interface ExtraMetrics {
   mostActiveDayCount: number;
   newsCount: number;
   videoCount: number;
+  companiesTracked: number;
+  topSources: Array<{ source: string; count: number }>;
 }
 
 export default function HeroStatsBannerClient() {
@@ -56,11 +58,35 @@ export default function HeroStatsBannerClient() {
         const newsCount = items.filter((item: any) => item.type === 'news').length;
         const videoCount = items.filter((item: any) => item.type === 'video').length;
 
+        // Count unique companies tracked
+        const uniqueCompanies = new Set<string>();
+        layoffItems.forEach((item: any) => {
+          if (item.companyName) {
+            uniqueCompanies.add(item.companyName);
+          }
+        });
+
+        // Count by source (news only, exclude YouTube)
+        const sourceCount: Record<string, number> = {};
+        layoffItems.forEach((item: any) => {
+          if (item.source && item.type === 'news' && !item.source.includes('youtube.com')) {
+            sourceCount[item.source] = (sourceCount[item.source] || 0) + 1;
+          }
+        });
+
+        // Get top 3 news sources
+        const topSources = Object.entries(sourceCount)
+          .map(([source, count]) => ({ source, count }))
+          .sort((a, b) => b.count - a.count)
+          .slice(0, 3);
+
         setExtraMetrics({
           mostActiveDay,
           mostActiveDayCount,
           newsCount,
-          videoCount
+          videoCount,
+          companiesTracked: uniqueCompanies.size,
+          topSources
         });
       })
       .catch((error) => {
@@ -158,14 +184,26 @@ export default function HeroStatsBannerClient() {
             </div>
             {extraMetrics.mostActiveDay && (
               <div className="flex items-center gap-2">
-                <span className="text-indigo-200">Most Active:</span>
+                <span className="text-indigo-200">Most active day:</span>
                 <span className="font-semibold">{extraMetrics.mostActiveDay} ({extraMetrics.mostActiveDayCount})</span>
               </div>
             )}
             <div className="flex items-center gap-2">
-              <span className="text-indigo-200">Content:</span>
+              <span className="text-indigo-200">Content mix:</span>
               <span className="font-semibold">News {extraMetrics.newsCount} | Videos {extraMetrics.videoCount}</span>
             </div>
+            <div className="flex items-center gap-2">
+              <span className="text-indigo-200">Companies tracked:</span>
+              <span className="font-semibold">{extraMetrics.companiesTracked}</span>
+            </div>
+            {extraMetrics.topSources.length > 0 && (
+              <div className="flex items-center gap-2">
+                <span className="text-indigo-200">Top sources:</span>
+                <span className="font-semibold">
+                  {extraMetrics.topSources.map((s, i) => `${i + 1}. ${s.source}`).join(', ')}
+                </span>
+              </div>
+            )}
           </div>
         </div>
       )}
