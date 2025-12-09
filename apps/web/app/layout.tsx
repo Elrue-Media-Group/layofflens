@@ -54,7 +54,7 @@ export default function RootLayout({
                     Daily AI-powered tracker for layoff related news and job market trends
                   </p>
                 </div>
-                <div className="flex-shrink-0">
+                <div className="flex-shrink-0 hidden sm:block">
                   <img
                     src="https://layofflens.blob.core.windows.net/layofflens/imagerightlogo.png"
                     alt="LayoffLens Accent"
