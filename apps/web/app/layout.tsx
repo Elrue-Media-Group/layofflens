@@ -42,15 +42,15 @@ export default function RootLayout({
         <GoogleAnalytics />
         <div className="sticky top-0 z-50">
           <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-sm">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-              <div className="flex items-center justify-between">
-                <div>
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex-shrink min-w-0">
                   <img
                     src="https://layofflens.blob.core.windows.net/layofflens/logo-redo.png"
                     alt="LayoffLens Logo"
-                    className="h-16 sm:h-20 w-auto object-contain rounded-xl"
+                    className="h-12 sm:h-14 w-auto object-contain rounded-xl"
                   />
-                  <p className="text-sm sm:text-base text-gray-800 dark:text-white mt-2">
+                  <p className="text-xs sm:text-sm text-gray-800 dark:text-white mt-1">
                     Daily AI-powered tracker for layoff related news and job market trends
                   </p>
                 </div>
@@ -58,7 +58,7 @@ export default function RootLayout({
                   <img
                     src="https://layofflens.blob.core.windows.net/layofflens/imagerightlogo.png"
                     alt="LayoffLens Accent"
-                    className="h-48 sm:h-56 w-auto object-contain"
+                    className="h-32 sm:h-36 w-auto object-contain"
                   />
                 </div>
               </div>
