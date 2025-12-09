@@ -6,7 +6,6 @@ import FeedClient from "@/components/FeedClient";
 import TypeFilter from "@/components/TypeFilter";
 import CategoryFilter from "@/components/CategoryFilter";
 import HeroStatsBannerClient from "@/components/HeroStatsBannerClient";
-import LayoffPulse from "@/components/LayoffPulse";
 
 export default function HomePageClient() {
   const [items, setItems] = useState<any[]>([]);
@@ -77,19 +76,9 @@ export default function HomePageClient() {
         </div>
       </div>
 
-      {/* Main content area with sidebar */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Main feed - 8 columns on large screens */}
-        <div className="lg:col-span-8">
-          <FeedClient initialItems={items} limit={50} />
-        </div>
-
-        {/* Sidebar - 4 columns on large screens */}
-        <div className="lg:col-span-4">
-          <div className="lg:sticky lg:top-24">
-            <LayoffPulse />
-          </div>
-        </div>
+      {/* Main content area - full width */}
+      <div>
+        <FeedClient initialItems={items} limit={50} />
       </div>
     </div>
   );

@@ -1,15 +1,68 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { fetchLayoffStats } from "@/lib/client";
+import { fetchLayoffStats, fetchItems } from "@/lib/client";
+
+interface ExtraMetrics {
+  mostActiveDay: string | null;
+  mostActiveDayCount: number;
+  newsCount: number;
+  videoCount: number;
+}
 
 export default function HeroStatsBannerClient() {
   const [stats, setStats] = useState<any>(null);
+  const [extraMetrics, setExtraMetrics] = useState<ExtraMetrics | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchLayoffStats(30)
-      .then((data) => setStats(data))
+    Promise.all([
+      fetchLayoffStats(30),
+      fetchItems({ days: 7 }) // Get last 7 days for pulse metrics
+    ])
+      .then(([statsData, itemsData]) => {
+        setStats(statsData);
+
+        // Calculate extra metrics from raw items
+        const items = Array.isArray(itemsData) ? itemsData : (itemsData.items || []);
+
+        // Filter to layoff news only
+        const layoffItems = items.filter((item: any) => {
+          const tags = typeof item.tags === 'string' ? JSON.parse(item.tags || '[]') : (item.tags || []);
+          return item.type === 'news' && tags.includes('Layoffs');
+        });
+
+        // Count by day of week
+        const dayCount: Record<string, number> = {};
+        const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+        layoffItems.forEach((item: any) => {
+          const date = new Date(item.date);
+          const dayName = dayNames[date.getDay()];
+          dayCount[dayName] = (dayCount[dayName] || 0) + 1;
+        });
+
+        // Find most active day
+        let mostActiveDay = null;
+        let mostActiveDayCount = 0;
+        Object.entries(dayCount).forEach(([day, count]) => {
+          if (count > mostActiveDayCount) {
+            mostActiveDay = day;
+            mostActiveDayCount = count;
+          }
+        });
+
+        // Count news vs videos (all items, not just layoffs)
+        const newsCount = items.filter((item: any) => item.type === 'news').length;
+        const videoCount = items.filter((item: any) => item.type === 'video').length;
+
+        setExtraMetrics({
+          mostActiveDay,
+          mostActiveDayCount,
+          newsCount,
+          videoCount
+        });
+      })
       .catch((error) => {
         console.warn('Failed to fetch stats:', error);
         setStats(null);
@@ -30,8 +83,8 @@ export default function HeroStatsBannerClient() {
     "text-gray-600 dark:text-gray-400";
 
   return (
-    <div className="bg-gradient-to-r from-indigo-500 to-purple-600 dark:from-indigo-600 dark:to-purple-700 rounded-xl shadow-lg p-8 mb-8 text-white">
-      <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+    <div className="bg-gradient-to-r from-indigo-500 to-purple-600 dark:from-indigo-600 dark:to-purple-700 rounded-xl shadow-lg p-6 mb-8 text-white">
+      <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-4">
         {/* Main Title */}
         <div className="text-center md:text-left">
           <h2 className="text-2xl md:text-3xl font-bold mb-2">
@@ -95,6 +148,27 @@ export default function HeroStatsBannerClient() {
           </div>
         </div>
       </div>
+
+      {/* 7-Day Pulse Metrics - Compact Row */}
+      {extraMetrics && (
+        <div className="border-t border-white/20 pt-4">
+          <div className="flex items-center justify-center gap-6 md:gap-8 text-sm flex-wrap">
+            <div className="flex items-center gap-2">
+              <span className="text-indigo-200">📊 Last 7 Days:</span>
+            </div>
+            {extraMetrics.mostActiveDay && (
+              <div className="flex items-center gap-2">
+                <span className="text-indigo-200">Most Active:</span>
+                <span className="font-semibold">{extraMetrics.mostActiveDay} ({extraMetrics.mostActiveDayCount})</span>
+              </div>
+            )}
+            <div className="flex items-center gap-2">
+              <span className="text-indigo-200">Content:</span>
+              <span className="font-semibold">News {extraMetrics.newsCount} | Videos {extraMetrics.videoCount}</span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
