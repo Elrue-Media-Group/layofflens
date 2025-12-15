@@ -25,9 +25,26 @@ export interface SerperResponse {
 }
 
 const NEWS_QUERIES = [
+  // Core layoff news
   "tech layoffs OR job cuts",
   "AI layoffs OR automation job losses",
   "unemployment rate BLS",
+
+  // Sector-specific queries
+  "finance layoffs OR banking job cuts",
+  "healthcare layoffs OR hospital job cuts",
+  "retail layoffs OR store closures",
+  "manufacturing layoffs OR factory closures",
+  "energy layoffs OR oil gas job cuts",
+  "media layoffs OR journalism job cuts",
+  "real estate layoffs OR construction job cuts",
+  "transportation layoffs OR logistics job cuts",
+
+  // Hiring market context
+  "hiring freeze 2025",
+  "job openings decline",
+  "tech hiring trends",
+  "labor market outlook",
 ];
 
 const VIDEO_QUERIES = [
