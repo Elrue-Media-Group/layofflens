@@ -80,13 +80,13 @@ export default function AnalyticsCharts({ stats }: AnalyticsChartsProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6">
           <div className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
-            This Week
+            Layoff News This Week
           </div>
           <div className="text-3xl font-bold text-gray-900 dark:text-gray-100">
             {summary.totalArticlesThisWeek}
           </div>
           <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            layoff news articles
+            articles published
           </div>
         </div>
 

@@ -129,7 +129,7 @@ export default function HeroStatsBannerClient() {
               {summary.totalArticlesThisWeek}
             </div>
             <div className="text-xs md:text-sm text-indigo-100 dark:text-indigo-200">
-              Stories This Week
+              Layoff News This Week
             </div>
           </div>
 
