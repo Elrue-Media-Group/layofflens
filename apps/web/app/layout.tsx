@@ -4,7 +4,7 @@ import DarkModeToggle from "@/components/DarkModeToggle";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://layofflens.com'),
+  metadataBase: new URL('https://www.layofflens.com'),
   title: {
     default: "LayoffLens - Daily AI-Powered Layoff Tracker",
     template: "%s | LayoffLens"
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://layofflens.com",
+    url: "https://www.layofflens.com",
     siteName: "LayoffLens",
     title: "LayoffLens - Daily AI-Powered Layoff Tracker",
     description: "Track the latest news, videos, and insights about layoffs, unemployment, and the impact of AI and automation on the job market.",
