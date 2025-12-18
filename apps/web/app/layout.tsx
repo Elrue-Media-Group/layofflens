@@ -4,10 +4,49 @@ import DarkModeToggle from "@/components/DarkModeToggle";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
 
 export const metadata: Metadata = {
-  title: "LayoffLens - Daily AI-Powered Layoff Tracker",
+  metadataBase: new URL('https://layofflens.com'),
+  title: {
+    default: "LayoffLens - Daily AI-Powered Layoff Tracker",
+    template: "%s | LayoffLens"
+  },
   description: "Track the latest news, videos, and insights about layoffs, unemployment, and the impact of AI and automation on the job market.",
+  keywords: ["layoffs", "tech layoffs", "job cuts", "unemployment", "AI automation", "layoff tracker", "job market", "layoff news"],
+  authors: [{ name: "LayoffLens" }],
   icons: {
     icon: "https://layofflens.blob.core.windows.net/layofflens/layofffavi.png",
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://layofflens.com",
+    siteName: "LayoffLens",
+    title: "LayoffLens - Daily AI-Powered Layoff Tracker",
+    description: "Track the latest news, videos, and insights about layoffs, unemployment, and the impact of AI and automation on the job market.",
+    images: [
+      {
+        url: "https://layofflens.blob.core.windows.net/layofflens/logo-redo.png",
+        width: 1200,
+        height: 630,
+        alt: "LayoffLens - Layoff Tracker",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "LayoffLens - Daily AI-Powered Layoff Tracker",
+    description: "Track the latest news, videos, and insights about layoffs, unemployment, and the impact of AI and automation on the job market.",
+    images: ["https://layofflens.blob.core.windows.net/layofflens/logo-redo.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
   },
 };
 
