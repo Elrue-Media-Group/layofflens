@@ -106,6 +106,9 @@ async function fetchAndSaveItems(): Promise<number> {
         companyName: layoffData.companyName,
         layoffCount: layoffData.layoffCount,
         sector: layoffData.sector,
+        channel: video.channel,
+        duration: video.duration,
+        position: video.position,
       };
       item.score = calculateScore(item, now);
       await saveItem(item);
@@ -134,6 +137,9 @@ async function fetchAndSaveItems(): Promise<number> {
       companyName: layoffData.companyName,
       layoffCount: layoffData.layoffCount,
       sector: layoffData.sector,
+      channel: video.channel,
+      duration: video.duration,
+      position: video.position,
     };
 
     // Enrich image for new items only (saves API calls on duplicates)
