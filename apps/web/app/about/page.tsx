@@ -70,36 +70,27 @@ export default function AboutPage() {
           </div>
         </div>
 
-        {/* About the Creator Section */}
+        {/* About Elrue Media Group */}
         <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-8 mb-8">
-          <div className="flex flex-col md:flex-row gap-8 mb-8">
+          <div className="flex flex-col md:flex-row gap-8 items-start">
             <img
-              src="https://layofflens.blob.core.windows.net/layofflens/tony.jpeg"
-              alt="Tony Cerrato"
-              className="w-64 h-64 rounded-lg object-cover shadow-lg"
+              src="https://d3tbaba9xfyjnl.cloudfront.net/elruemediagroup-logoHD.png"
+              alt="Elrue Media Group"
+              className="w-48 h-48 rounded-lg object-contain"
             />
             <div>
               <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4">
-                Tony Cerrato
+                Built by Elrue Media Group
               </h2>
-              <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
-                Tony Cerrato is a seasoned technology leader with more than 30 years of experience in software quality, cloud engineering, and automation. His career spans some of the most innovative names in the industry, including Microsoft, Synopsys, Veracode, and TraceLink, where he led global teams delivering reliable, secure, and high-performance software platforms.
-              </p>
+              <div className="space-y-4 text-gray-600 dark:text-gray-400 leading-relaxed">
+                <p>
+                  LayoffLens is developed and maintained by <a href="https://elruemediagroup.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline">Elrue Media Group</a>, a technology studio focused on building practical, data-driven web applications that help people stay informed and make better decisions.
+                </p>
+                <p>
+                  Elrue Media Group specializes in cloud-native development, AI-powered automation, and modern full-stack applications. LayoffLens is one of several projects built under the Elrue umbrella, combining real-time data aggregation with intelligent analysis to deliver timely insights on the job market.
+                </p>
+              </div>
             </div>
-          </div>
-
-          <div className="space-y-6 text-gray-600 dark:text-gray-400 leading-relaxed">
-            <p>
-              Tony has spent his career driving the modernization of quality engineering practices across complex, cloud-based software platforms. He focuses on integrating AI-driven testing, continuous delivery, and advanced analytics to enhance coverage, accelerate feedback cycles, and raise the overall standard of software reliability. His leadership style emphasizes data-driven decision-making, collaboration, and a culture of innovation and accountability.
-            </p>
-
-            <p>
-              Throughout his career in high tech, Tony has helped organizations evolve from traditional QA models to fully automated, intelligence-assisted quality engineering frameworks. He has built and led global teams, defined automation strategies for large-scale SaaS environments, and implemented AI-based systems that improve efficiency and insight across development lifecycles—from regulated industries to modern cloud-native platforms.
-            </p>
-
-            <p>
-              Tony is an AWS Certified Solutions Architect, AWS Certified AI Practitioner, AWS Certified Cloud Practitioner, and Certified ScrumMaster. He holds a Master's in Computer Information Systems (Security) from Boston University and a Bachelor's in Business Management (MIS) from the University of Massachusetts.
-            </p>
           </div>
         </div>
 
